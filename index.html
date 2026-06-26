@@ -1,0 +1,2472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MonitorBase Credit Access Onboarding</title>
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.5/dist/signature_pad.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#003366;
+  --blue:#0066cc;
+  --bg:#f4f6f9;
+  --white:#ffffff;
+  --red:#cc2200;
+  --green:#007744;
+  --border:#d0d7e3;
+  --text:#1a2233;
+  --muted:#556080;
+  --radius:8px;
+  --radius-lg:12px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:15px;line-height:1.6}
+a{color:var(--blue)}
+
+/* Header */
+.header{background:var(--navy);color:#fff;padding:0}
+.header-inner{max-width:860px;margin:0 auto;padding:20px 24px}
+.logo{font-size:26px;font-weight:700;letter-spacing:-0.5px;color:#fff}
+.logo span{color:#5599ff}
+.header-titles{margin-top:6px}
+.form-title{font-size:20px;font-weight:600;color:#fff}
+.form-subtitle{font-size:13px;color:#99bbdd;margin-top:2px}
+
+/* Progress */
+.progress-wrap{background:var(--navy);border-top:1px solid #1a4477;padding-bottom:16px}
+.progress-inner{max-width:860px;margin:0 auto;padding:0 24px}
+.progress-label{font-size:12px;color:#99bbdd;margin-bottom:6px}
+.progress-bar-bg{background:#1a4477;border-radius:99px;height:6px;overflow:hidden}
+.progress-bar-fill{background:linear-gradient(90deg,#5599ff,#33ccff);height:100%;border-radius:99px;transition:width 0.4s ease}
+.step-indicators{display:flex;gap:4px;margin-top:8px;flex-wrap:wrap}
+.step-dot{width:8px;height:8px;border-radius:50%;background:#1a4477;transition:all 0.3s}
+.step-dot.active{background:#5599ff;transform:scale(1.3)}
+.step-dot.done{background:#33cc88}
+
+/* Main */
+.main{max-width:860px;margin:0 auto;padding:28px 24px 60px}
+
+/* Card */
+.card{background:var(--white);border-radius:var(--radius-lg);border:1px solid var(--border);padding:28px 32px;margin-bottom:20px}
+.card-title{font-size:18px;font-weight:600;color:var(--navy);margin-bottom:4px}
+.card-desc{font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.5}
+.section-title{font-size:14px;font-weight:600;color:var(--navy);margin:20px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+
+/* Form elements */
+.field{margin-bottom:18px}
+.field label{display:block;font-size:13px;font-weight:600;color:var(--text);margin-bottom:5px}
+.field label .req{color:var(--red);margin-left:2px}
+.field input[type=text],
+.field input[type=email],
+.field input[type=tel],
+.field input[type=number],
+.field input[type=date],
+.field input[type=url],
+.field textarea,
+.field select{
+  width:100%;padding:10px 13px;border:1px solid var(--border);border-radius:var(--radius);
+  font-size:14px;color:var(--text);background:#fff;
+  transition:border-color 0.2s,box-shadow 0.2s;
+  font-family:inherit;
+}
+.field input:focus,.field textarea:focus,.field select:focus{
+  outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,102,204,0.12)
+}
+.field input.error,.field textarea.error,.field select.error{border-color:var(--red);box-shadow:0 0 0 3px rgba(204,34,0,0.1)}
+.field textarea{resize:vertical;min-height:80px}
+.field select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23556080' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px}
+.field-hint{font-size:12px;color:var(--muted);margin-top:4px}
+.field-error{font-size:12px;color:var(--red);margin-top:4px;display:none}
+.field-error.show{display:block}
+.field input[readonly]{background:#f4f6f9;color:var(--muted)}
+
+/* Grid */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+@media(max-width:600px){.grid-2,.grid-3{grid-template-columns:1fr}}
+
+/* Radio / Checkbox */
+.radio-group,.check-group{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+.radio-group.inline,.check-group.inline{flex-direction:row;flex-wrap:wrap;gap:12px}
+.radio-item,.check-item{display:flex;align-items:flex-start;gap:8px;cursor:pointer;font-size:14px}
+.radio-item input,.check-item input{margin-top:2px;accent-color:var(--blue);flex-shrink:0;width:16px;height:16px}
+.radio-item label,.check-item label{cursor:pointer;font-weight:400;color:var(--text);line-height:1.4}
+
+/* Big radio buttons */
+.big-radio-group{display:flex;gap:16px;margin-top:8px;flex-wrap:wrap}
+.big-radio-btn{flex:1;min-width:140px;border:2px solid var(--border);border-radius:var(--radius-lg);padding:20px;text-align:center;cursor:pointer;transition:all 0.2s;position:relative}
+.big-radio-btn:hover{border-color:var(--blue);background:#f0f5ff}
+.big-radio-btn.selected{border-color:var(--blue);background:#e8f0ff}
+.big-radio-btn input{position:absolute;opacity:0;width:0;height:0}
+.big-radio-label{font-size:16px;font-weight:600;color:var(--navy)}
+.big-radio-sub{font-size:12px;color:var(--muted);margin-top:4px}
+
+/* Conditional */
+.conditional{display:none}
+.conditional.show{display:block}
+
+/* File upload */
+.upload-zone{border:2px dashed var(--border);border-radius:var(--radius);padding:24px;text-align:center;cursor:pointer;transition:all 0.2s;background:#fafbfd}
+.upload-zone:hover,.upload-zone.dragover{border-color:var(--blue);background:#f0f5ff}
+.upload-zone.uploaded{border-color:var(--green);background:#f0fff8;border-style:solid}
+.upload-icon{font-size:32px;margin-bottom:8px;color:var(--muted)}
+.upload-text{font-size:13px;color:var(--muted)}
+.upload-text strong{color:var(--blue)}
+.upload-preview{margin-top:12px;display:none}
+.upload-preview img{max-width:120px;max-height:120px;border-radius:var(--radius);border:1px solid var(--border);object-fit:cover}
+.upload-preview.show{display:block}
+.upload-filename{font-size:12px;color:var(--green);margin-top:6px;font-weight:600}
+.upload-progress{height:4px;background:#e0e6ef;border-radius:99px;margin-top:8px;overflow:hidden;display:none}
+.upload-progress.show{display:block}
+.upload-progress-bar{height:100%;background:var(--blue);border-radius:99px;transition:width 0.3s;width:0}
+.upload-hidden{display:none}
+
+/* Signature */
+.sig-wrap{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;background:#fff}
+.sig-canvas{display:block;width:100%;height:160px;cursor:crosshair}
+.sig-actions{display:flex;justify-content:flex-end;padding:8px;border-top:1px solid var(--border);background:#fafbfd}
+.sig-clear{font-size:12px;color:var(--muted);cursor:pointer;padding:4px 12px;border:1px solid var(--border);border-radius:var(--radius);background:#fff;transition:all 0.2s}
+.sig-clear:hover{border-color:var(--red);color:var(--red)}
+
+/* Acknowledgment / Legal */
+.legal-box{background:#f4f6f9;border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;font-size:13px;color:var(--muted);line-height:1.6;margin:16px 0}
+
+/* Buttons */
+.btn-row{display:flex;gap:12px;justify-content:flex-end;margin-top:28px;align-items:center}
+.btn{padding:11px 28px;border-radius:var(--radius);font-size:15px;font-weight:600;cursor:pointer;border:none;transition:all 0.2s;font-family:inherit}
+.btn-back{background:#fff;border:1px solid var(--border);color:var(--muted)}
+.btn-back:hover{border-color:var(--navy);color:var(--navy)}
+.btn-next{background:var(--blue);color:#fff}
+.btn-next:hover{background:#0055bb}
+.btn-submit{background:var(--navy);color:#fff}
+.btn-submit:hover{background:#002244}
+.btn:disabled{opacity:0.6;cursor:not-allowed}
+
+/* Spinner */
+.spinner{display:none;width:20px;height:20px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;margin-left:8px}
+.spinner.show{display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Loading overlay */
+.loading-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;flex-direction:column;gap:16px}
+.loading-overlay.show{display:flex}
+.loading-card{background:#fff;border-radius:var(--radius-lg);padding:32px 40px;text-align:center}
+.loading-spinner-lg{width:48px;height:48px;border:3px solid #e0e6ef;border-top-color:var(--blue);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px}
+.loading-card p{color:var(--muted);font-size:14px}
+
+/* Thank you */
+.thank-you{display:none;text-align:center;padding:60px 20px}
+.thank-you.show{display:block}
+.check-circle{width:80px;height:80px;background:#e8fff4;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 24px;font-size:40px}
+.thank-you h2{font-size:26px;font-weight:700;color:var(--navy);margin-bottom:10px}
+.thank-you p{color:var(--muted);max-width:480px;margin:0 auto}
+
+/* Geo field */
+.geo-row{display:flex;gap:10px;align-items:flex-end}
+.geo-row .field{flex:1}
+.geo-btn{padding:10px 16px;background:var(--navy);color:#fff;border:none;border-radius:var(--radius);cursor:pointer;white-space:nowrap;font-size:13px;font-weight:600;font-family:inherit;transition:background 0.2s;flex-shrink:0}
+.geo-btn:hover{background:#002244}
+
+/* Lender checkboxes */
+.lender-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-top:8px}
+
+/* Error banner */
+.error-banner{background:#fff0ee;border:1px solid #ffcccc;border-radius:var(--radius);padding:12px 16px;color:var(--red);font-size:13px;margin-bottom:16px;display:none}
+.error-banner.show{display:block}
+
+/* Alert */
+.info-box{background:#e8f4ff;border:1px solid #b8d8ff;border-radius:var(--radius);padding:12px 16px;font-size:13px;color:#003399;margin:10px 0}
+
+/* Page hidden */
+.page{display:none}
+.page.active{display:block}
+
+/* Responsive */
+@media(max-width:640px){
+  .card{padding:20px 16px}
+  .main{padding:16px 12px 60px}
+  .header-inner{padding:16px}
+  .btn-row{flex-direction:column-reverse;gap:8px}
+  .btn{width:100%;text-align:center}
+}
+</style>
+</head>
+<body>
+
+<!-- Config (fill in before deploying) -->
+<script>
+const CONFIG = {
+  cloudinary_cloud_name: 'YOUR_CLOUD_NAME',
+  cloudinary_upload_preset: 'YOUR_UPLOAD_PRESET',
+  emailjs_service_id: 'YOUR_SERVICE_ID',
+  emailjs_template_id: 'YOUR_TEMPLATE_ID',
+  emailjs_public_key: 'YOUR_PUBLIC_KEY',
+  notification_email: 'YOUR_EMAIL@domain.com'
+};
+</script>
+
+<div class="header">
+    <div class="header-inner">
+    <img src="logo.png" alt="MonitorBase" style="height:48px;width:auto;mix-blend-mode:screen;">
+    <div class="header-titles">
+      <div class="form-title">Credit Access Onboarding</div>
+      <div class="form-subtitle">End User Virtual Inspection Checklist</div>
+    </div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-inner">
+      <div class="progress-label" id="progressLabel">Step 1 of 10</div>
+      <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressBar" style="width:10%"></div></div>
+      <div class="step-indicators" id="stepDots"></div>
+    </div>
+  </div>
+</div>
+
+<div class="main" id="mainContent">
+
+<!-- THANK YOU PAGE -->
+<div class="thank-you" id="thankYouPage">
+  <div class="check-circle">✓</div>
+  <h2>Submission Complete!</h2>
+  <p>Thank you for completing the MonitorBase Credit Access Onboarding. Your information has been submitted successfully. Our team will review your application and be in touch shortly.</p>
+</div>
+
+<!-- PAGE 1: Company Info -->
+<div class="page active" id="page-1">
+  <div class="card">
+    <div class="card-title">Company Information</div>
+    <div class="card-desc">Please provide your business details. All required fields are marked with an asterisk.</div>
+
+    <div class="grid-2">
+      <div class="field">
+        <label>Business Name <span class="req">*</span></label>
+        <input type="text" id="businessName" placeholder="Legal business name">
+        <div class="field-error" id="err-businessName">This field is required.</div>
+      </div>
+      <div class="field">
+        <label>DBA / Doing Business As</label>
+        <input type="text" id="dba" placeholder="If applicable">
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="field">
+        <label>Processed By <span class="req">*</span></label>
+        <input type="text" id="processedBy" placeholder="Name of person completing this form">
+        <div class="field-error" id="err-processedBy">This field is required.</div>
+      </div>
+      <div class="field">
+        <label>Industry Type <span class="req">*</span></label>
+        <select id="industryType">
+          <option value="">— Select —</option>
+          <option value="Mortgage Broker">Mortgage Broker</option>
+          <option value="Mortgage Lender">Mortgage Lender</option>
+          <option value="Bank">Bank</option>
+          <option value="Credit Union">Credit Union</option>
+        </select>
+        <div class="field-error" id="err-industryType">Please select an industry type.</div>
+      </div>
+    </div>
+
+    <div class="section-title">Primary Contact</div>
+    <div class="grid-2">
+      <div class="field">
+        <label>Primary Contact Name <span class="req">*</span></label>
+        <input type="text" id="primaryContact" placeholder="Full name">
+        <div class="field-error" id="err-primaryContact">This field is required.</div>
+      </div>
+      <div class="field">
+        <label>Primary Contact Email <span class="req">*</span></label>
+        <input type="email" id="primaryEmail" placeholder="email@example.com">
+        <div class="field-error" id="err-primaryEmail">Please enter a valid email address.</div>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="field">
+        <label>Primary Contact Phone <span class="req">*</span></label>
+        <input type="tel" id="primaryPhone" placeholder="(000) 000-0000" class="phone-input">
+        <div class="field-error" id="err-primaryPhone">Please enter a valid phone number.</div>
+      </div>
+      <div class="field">
+        <label>How Long at Current Address <span class="req">*</span></label>
+        <input type="text" id="timeAtAddress" placeholder="e.g., 3 years">
+        <div class="field-error" id="err-timeAtAddress">This field is required.</div>
+      </div>
+    </div>
+
+    <div class="section-title">Business Address</div>
+    <div class="field">
+      <label>Street Address <span class="req">*</span></label>
+      <input type="text" id="addrStreet" placeholder="123 Main Street">
+      <div class="field-error" id="err-addrStreet">This field is required.</div>
+    </div>
+    <div class="field">
+      <label>Street Address Line 2</label>
+      <input type="text" id="addrStreet2" placeholder="Suite, Floor, etc.">
+    </div>
+    <div class="grid-3">
+      <div class="field">
+        <label>City <span class="req">*</span></label>
+        <input type="text" id="addrCity" placeholder="City">
+        <div class="field-error" id="err-addrCity">This field is required.</div>
+      </div>
+      <div class="field">
+        <label>State <span class="req">*</span></label>
+        <input type="text" id="addrState" placeholder="CA" maxlength="2">
+        <div class="field-error" id="err-addrState">This field is required.</div>
+      </div>
+      <div class="field">
+        <label>ZIP Code <span class="req">*</span></label>
+        <input type="text" id="addrZip" placeholder="00000" maxlength="10">
+        <div class="field-error" id="err-addrZip">This field is required.</div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="field">
+        <label>Start Date</label>
+        <input type="date" id="startDate">
+      </div>
+      <div class="field">
+        <label>End Date</label>
+        <input type="date" id="endDate">
+      </div>
+    </div>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-next" onclick="nextPage()">Next &rarr;</button>
+  </div>
+</div>
+
+<!-- PAGE 2: Virtual Site Inspection Photos -->
+<div class="page" id="page-2">
+  <div class="card">
+    <div class="card-title">Virtual Site Inspection Photos</div>
+    <div class="card-desc">Please upload clear photos of your business location. All photos are required unless noted otherwise.</div>
+
+    <div class="section-title">Geolocation</div>
+    <div class="geo-row">
+      <div class="field" style="flex:1;margin-bottom:0">
+        <label>Location Coordinates</label>
+        <input type="text" id="geoCoords" readonly placeholder="Coordinates will appear here after capture">
+      </div>
+      <button class="geo-btn" onclick="captureLocation()">&#x1F4CD; Capture My Location</button>
+    </div>
+    <div class="field-hint" style="margin-top:6px">Click the button to auto-detect your current GPS coordinates.</div>
+
+    <div class="section-title">Required Photos</div>
+
+    <div class="field">
+      <label>1. Exterior — Permanent Company Signage <span class="req">*</span></label>
+      <div class="info-box">Note: If located in an executive suite, photograph the suite directory or any available signage identifying your business.</div>
+      <div id="upload-exterior" class="upload-area" data-field="photoExterior" data-required="true"></div>
+      <div class="field-error" id="err-photoExterior">Please upload this required photo.</div>
+    </div>
+
+    <div class="field">
+      <label>2. Interior — Reception Area <span class="req">*</span></label>
+      <div id="upload-reception" class="upload-area" data-field="photoReception" data-required="true"></div>
+      <div class="field-error" id="err-photoReception">Please upload this required photo.</div>
+    </div>
+
+    <div class="field">
+      <label>3. Interior — Product / Workspace / Computers / Desk <span class="req">*</span></label>
+      <div id="upload-workspace" class="upload-area" data-field="photoWorkspace" data-required="true"></div>
+      <div class="field-error" id="err-photoWorkspace">Please upload this required photo.</div>
+    </div>
+
+    <div class="field">
+      <label>4. Interior — Where Consumer Files Are Secured <span class="req">*</span></label>
+      <div id="upload-files" class="upload-area" data-field="photoFiles" data-required="true"></div>
+      <div class="field-error" id="err-photoFiles">Please upload this required photo.</div>
+    </div>
+
+    <div class="field">
+      <label>5. Interior — Business Servers <span class="req">*</span></label>
+      <div class="info-box">Note: If your company has no physical servers, please photograph the area where computers are located and note "No physical servers — cloud-based" in your inspection notes.</div>
+      <div id="upload-servers" class="upload-area" data-field="photoServers" data-required="true"></div>
+      <div class="field-error" id="err-photoServers">Please upload this required photo.</div>
+    </div>
+
+    <div class="field">
+      <label>6. Interior — Shredder or Shredder Bin <span class="req">*</span></label>
+      <div id="upload-shredder" class="upload-area" data-field="photoShredder" data-required="true"></div>
+      <div class="field-error" id="err-photoShredder">Please upload this required photo.</div>
+    </div>
+
+    <div class="section-title">Additional Uploads</div>
+
+    <div class="field">
+      <label>Company Logo <span class="req">*</span></label>
+      <div id="upload-logo" class="upload-area" data-field="companyLogo" data-required="true"></div>
+      <div class="field-error" id="err-companyLogo">Please upload your company logo.</div>
+    </div>
+
+    <div class="field">
+      <div class="check-item">
+        <input type="checkbox" id="noLogoPromo">
+        <label for="noLogoPromo">Request MonitorBase NOT use your logo in promotional client lists</label>
+      </div>
+    </div>
+
+    <div class="field conditional" id="photoIdField">
+      <label>Photo ID <span class="req">*</span> <em style="font-weight:400;color:var(--muted)">(Brokers Only)</em></label>
+      <div id="upload-photoid" class="upload-area" data-field="photoId" data-required="false"></div>
+      <div class="field-error" id="err-photoId">Please upload a photo ID.</div>
+    </div>
+
+    <div class="section-title">Photo Details</div>
+    <div class="grid-2">
+      <div class="field">
+        <label>Were Photographs Real Time or Static? <span class="req">*</span></label>
+        <select id="photoType">
+          <option value="">— Select —</option>
+          <option value="Real Time">Real Time</option>
+          <option value="Static">Static</option>
+        </select>
+        <div class="field-error" id="err-photoType">Please select an option.</div>
+      </div>
+      <div class="field">
+        <label>Photographs Taken By <span class="req">*</span></label>
+        <input type="text" id="photoTakenBy" placeholder="Full name">
+        <div class="field-error" id="err-photoTakenBy">This field is required.</div>
+      </div>
+    </div>
+    <div class="field" style="max-width:300px">
+      <label>Date Photographs Were Taken <span class="req">*</span></label>
+      <input type="date" id="photoDate">
+      <div class="field-error" id="err-photoDate">Please select a date.</div>
+    </div>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-back" onclick="prevPage()">&larr; Back</button>
+    <button class="btn btn-next" onclick="nextPage()">Next &rarr;</button>
+  </div>
+</div>
+
+<!-- PAGE 3: Inspection Checklist Q1-Q9 -->
+<div class="page" id="page-3">
+  <div class="card">
+    <div class="card-title">Inspection Checklist — Questions 1–9</div>
+    <div class="card-desc">Answer all questions thoroughly. Additional fields may appear based on your responses.</div>
+
+    <!-- Q1 -->
+    <div class="section-title">Q1 — Address Verification</div>
+    <div class="field">
+      <label>a) Is the company located at the exact address stated on this form? <span class="req">*</span></label>
+      <div class="radio-group inline">
+        <div class="radio-item"><input type="radio" name="q1a" value="Yes" id="q1a_yes"><label for="q1a_yes">Yes</label></div>
+        <div class="radio-item"><input type="radio" name="q1a" value="No" id="q1a_no"><label for="q1a_no">No</label></div>
+      </div>
+      <div class="field-error" id="err-q1a">Please select Yes or No.</div>
+    </div>
+    <div class="field conditional" id="q1b_wrap">
+      <label>b) Please explain the discrepancy <span class="req">*</span></label>
+      <textarea id="q1b" placeholder="Describe the discrepancy..."></textarea>
+    </div>
+    <div class="field">
+      <label>c) Does the location seem appropriate for this type of business? <span class="req">*</span></label>
+      <div class="radio-group inline">
+        <div class="radio-item"><input type="radio" name="q1c" value="Yes" id="q1c_yes"><label for="q1c_yes">Yes</label></div>
+        <div class="radio-item"><input type="radio" name="q1c" value="No" id="q1c_no"><label for="q1c_no">No</label></div>
+      </div>
+      <div class="field-error" id="err-q1c">Please select Yes or No.</div>
+    </div>
+    <div class="field conditional" id="q1d_wrap">
+      <label>d) Brief justification / explanation <span class="req">*</span></label>
+      <textarea id="q1d" placeholder="Please explain..."></textarea>
+    </div>
+
+    <!-- Q2 -->
+    <div class="section-title">Q2 — Facility Type</div>
+    <div class="field">
+      <label>a) Type of facility</label>
+      <select id="q2a">
+        <option value="">— Select —</option>
+        <option value="Commercial Building">Commercial Building</option>
+        <option value="Private Residence">Private Residence</option>
+        <option value="Apartment">Apartment</option>
+        <option value="Storefront">Storefront</option>
+        <option value="House Converted Strictly for Business Use">House Converted Strictly for Business Use</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>b) Is any part of the location used for living quarters?</label>
+      <div class="radio-group inline">
+        <div class="radio-item"><input type="radio" name="q2b" value="Yes" id="q2b_yes"><label for="q2b_yes">Yes</label></div>
+        <div class="radio-item"><input type="radio" name="q2b" value="No" id="q2b_no"><label for="q2b_no">No</label></div>
+      </div>
+    </div>
+    <div class="field">
+      <label>c) Is the office in an executive suite or virtual office?</label>
+      <div class="radio-group inline">
+        <div class="radio-item"><input type="radio" name="q2c" value="Yes" id="q2c_yes"><label for="q2c_yes">Yes</label></div>
+        <div class="radio-item"><input type="radio" name="q2c" value="No" id="q2c_no"><label for="q2c_no">No</label></div>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="field">
+        <label>d) Landlord / Management Name</label>
+        <input type="text" id="q2d_name" placeholder="Name">
+      </div>
+      <div class="field">
+        <label>d) Landlord / Management Phone</label>
+        <input type="tel" id="q2d_phone" placeholder="(000) 000-0000" class="phone-input">
+      </div>
+    </div>
+    <div class="field">
+      <label>d) Attach Lease Agreement (optional)</label>
+      <div id="upload-lease" class="upload-area" data-field="leaseDoc" data-required="false"></div>
+    </div>
+
+    <!-- Q3 -->
+    <div class="field conditional" id="q3_wrap">
+      <div class="section-title" style="margin-top:0">Q3 — Apartment Use</div>
+      <label>Select all that apply:</label>
+      <div class="check-group" style="margin-top:8px">
+        <div class="check-item"><input type="checkbox" id="q3a"><label for="q3a">Utilized as commercial office space during normal business hours only</label></div>
+        <div class="check-item"><input type="checkbox" id="q3b"><label for="q3b">Utilized as personal living quarters by resident</label></div>
+        <div class="check-item"><input type="checkbox" id="q3c"><label for="q3c">N/A</label></div>
+      </div>
+    </div>
+
+    <!-- Q4 -->
+    <div class="section-title">Q4 — Permanent Location</div>
+    <div class="field">
+      <label>a) Is the address on this form your permanent office location?</label>
+      <div class="radio-group inline">
+        <div class="radio-item"><input type="radio" name="q4a" value="Yes" id="q4a_yes"><label for="q4a_yes">Yes</label></div>
+        <div class="radio-item"><input type="radio" name="q4a" value="No" id="q4a_no"><label for="q4a_no">No</label></div>
+      </div>
+    </div>
+    <div class="field conditional" id="q4b_wrap">
+      <label>b) Please explain</label>
+      <textarea id="q4b" placeholder="Explain your permanent office situation..."></textarea>
+    </div>
+
+    <!-- Q5 -->
+    <div class="section-title">Q5 — Shared Office</div>
+    <div class="field">
+      <label>a) Is the office shared with another business?</label>
+      <div class="radio-group inline">
+        <div class="radio-item"><input type="radio" name="q5a" value="Yes" id="q5a_yes"><label for="q5a_yes">Yes</label></div>
+        <div class="radio-item"><input type="radio" name="q5a" value="No" id="q5a_no"><label for="q5a_no">No</label></div>
+      </div>
+    </div>
+    <div class="conditional" id="q5_detail">
+      <div class="field">
+        <label>b) Name and type of service of shared business</label>
+        <input type="text" id="q5b" placeholder="Business name and type">
+      </div>
+      <div class="field">
+        <label>c) Are the offices separated by a lockable door?</label>
+        <div class="radio-group inline">
+          <div class="radio-item"><input type="radio" name="q5c" value="Yes" id="q5c_yes"><label for="q5c_yes">Yes</label></div>
+          <div class="radio-item"><input type="radio" name="q5c" value="No" id="q5c_no"><label for="q5c_no">No</label></div>
+        </div>
+      </div>
+      <div class="field">
+        <label>d) Relationship between the companies</label>
+        <input type="text" id="q5d" placeholder="Describe the relationship">
+      </div>
+    </div>
+
+    <!-- Q6 -->
+    <div class="section-title">Q6 — Furnishings</div>
+    <div class="field">
+      <label>a) Does the office have appropriate furnishings (equipment, phones, shredders)?</label>
+      <div class="radio-group inline">
+        <div class="radio-item"><input type="radio" name="q6a" value="Yes" id="q6a_yes"><label for="q6a_yes">Yes</label></div>
+        <div class="radio-item"><input type="radio" name="q6a" value="No" id="q6a_no"><label for="q6a_no">No</label></div>
+      </div>
+    </div>
+    <div class="field">
+      <label>b) Customer files are stored:</label>
+      <select id="q6b">
+        <option value="">— Select —</option>
+        <option value="Paper">Paper</option>
+        <option value="Electronic">Electronic</option>
+        <option value="Both Paper and Electronic">Both Paper and Electronic</option>
+      </select>
+    </div>
+
+    <!-- Q7 -->
+    <div class="section-title">Q7 — Signage</div>
+    <div class="field">
+      <label>a) Is there a permanent sign identifying the company?</label>
+      <div class="radio-group inline">
+        <div class="radio-item"><input type="radio" name="q7a" value="Yes" id="q7a_yes"><label for="q7a_yes">Yes</label></div>
+        <div class="radio-item"><input type="radio" name="q7a" value="No" id="q7a_no"><label for="q7a_no">No</label></div>
+      </div>
+    </div>
+    <div class="field conditional" id="q7b_wrap">
+      <label>b) Where is the sign located?</label>
+      <input type="text" id="q7b" placeholder="e.g., Front door, building directory, lobby">
+    </div>
+    <div class="field conditional" id="q7c_wrap">
+      <label>c) If no sign, please explain why</label>
+      <textarea id="q7c" placeholder="Explain the absence of permanent signage..."></textarea>
+    </div>
+    <div class="field conditional" id="q7d_wrap">
+      <label>d) Does the sign reflect the same company name as on this form?</label>
+      <div class="radio-group inline">
+        <div class="radio-item"><input type="radio" name="q7d" value="Yes" id="q7d_yes"><label for="q7d_yes">Yes</label></div>
+        <div class="radio-item"><input type="radio" name="q7d" value="No" id="q7d_no"><label for="q7d_no">No</label></div>
+      </div>
+    </div>
+    <div class="field conditional" id="q7e_wrap">
+      <label>e) Exact name as it appears on the sign</label>
+      <input type="text" id="q7e" placeholder="Exact text on sign">
+    </div>
+
+    <!-- Q8 -->
+    <div class="section-title">Q8 — Office Activity</div>
+    <div class="field">
+      <label>a) Is the office actively in use?</label>
+      <div class="radio-group inline">
+        <div class="radio-item"><input type="radio" name="q8a" value="Yes" id="q8a_yes"><label for="q8a_yes">Yes</label></div>
+        <div class="radio-item"><input type="radio" name="q8a" value="No" id="q8a_no"><label for="q8a_no">No</label></div>
+      </div>
+    </div>
+    <div class="field">
+      <label>b) Number of employees at this location</label>
+      <input type="number" id="q8b" placeholder="0" min="0" style="max-width:140px">
+    </div>
+
+    <!-- Q9 -->
+    <div class="section-title">Q9 — Website</div>
+    <div class="field">
+      <label>c) Website address(es)</label>
+      <input type="text" id="q9c" placeholder="https://www.example.com">
+    </div>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-back" onclick="prevPage()">&larr; Back</button>
+    <button class="btn btn-next" onclick="nextPage()">Next &rarr;</button>
+  </div>
+</div>
+
+<!-- PAGE 4: Security Q10-Q14 -->
+<div class="page" id="page-4">
+  <div class="card">
+    <div class="card-title">Security — Questions 10–14</div>
+    <div class="card-desc">Please describe the physical and data security measures at your location.</div>
+
+    <!-- Q10 -->
+    <div class="section-title">Q10 — Physical Security</div>
+    <div class="field">
+      <label>a) Describe security features present at this location</label>
+      <textarea id="q10a" placeholder="e.g., Keycard access, deadbolt locks, alarm system, security cameras..."></textarea>
+    </div>
+    <div class="field">
+      <label>b) Hours of operation and access</label>
+      <textarea id="q10b" placeholder="e.g., Monday–Friday, 8am–6pm. After-hours access requires keycard."></textarea>
+    </div>
+    <div class="field">
+      <label>c) Do you use a security system?</label>
+      <div class="radio-group inline">
+        <div class="radio-item"><input type="radio" name="q10c" value="Yes" id="q10c_yes"><label for="q10c_yes">Yes</label></div>
+        <div class="radio-item"><input type="radio" name="q10c" value="No" id="q10c_no"><label for="q10c_no">No</label></div>
+      </div>
+    </div>
+    <div class="field">
+      <label>d) Is there a security guard on duty?</label>
+      <div class="radio-group inline">
+        <div class="radio-item"><input type="radio" name="q10d" value="Yes" id="q10d_yes"><label for="q10d_yes">Yes</label></div>
+        <div class="radio-item"><input type="radio" name="q10d" value="No" id="q10d_no"><label for="q10d_no">No</label></div>
+      </div>
+    </div>
+    <div class="field conditional" id="q10e_wrap">
+      <label>e) Is the security guard on duty 24 hours or only during the day?</label>
+      <div class="radio-group inline">
+        <div class="radio-item"><input type="radio" name="q10e" value="24 Hours" id="q10e_24"><label for="q10e_24">24 Hours</label></div>
+        <div class="radio-item"><input type="radio" name="q10e" value="Daytime Only" id="q10e_day"><label for="q10e_day">Daytime Only</label></div>
+      </div>
+    </div>
+
+    <!-- Q11 -->
+    <div class="section-title">Q11 — Consumer Report Security</div>
+    <div class="field">
+      <label>If a consumer report is printed, how are the reports secured?</label>
+      <input type="text" id="q11" placeholder="e.g., Locked filing cabinets, restricted access area...">
+    </div>
+
+    <!-- Q12 -->
+    <div class="section-title">Q12 — Servers</div>
+    <div class="field">
+      <label>a) Where are your servers located?</label>
+      <select id="q12a">
+        <option value="">— Select —</option>
+        <option value="Virtually">Virtually</option>
+        <option value="Remotely">Remotely</option>
+        <option value="On-site">On-site</option>
+      </select>
+    </div>
+    <div class="conditional" id="q12_onsite">
+      <div class="field">
+        <label>b) Is the server in a segregated / secure location?</label>
+        <div class="radio-group inline">
+          <div class="radio-item"><input type="radio" name="q12b" value="Yes" id="q12b_yes"><label for="q12b_yes">Yes</label></div>
+          <div class="radio-item"><input type="radio" name="q12b" value="No" id="q12b_no"><label for="q12b_no">No</label></div>
+        </div>
+      </div>
+      <div class="field">
+        <label>c) Please explain the server setup</label>
+        <textarea id="q12c" placeholder="Describe the server room or location..."></textarea>
+      </div>
+    </div>
+
+    <!-- Q13 -->
+    <div class="conditional" id="q13_wrap">
+      <div class="section-title">Q13 — Local Server Details</div>
+      <div class="field">
+        <label>a) Does the server room have environmental controls (heating/AC)?</label>
+        <div class="radio-group inline">
+          <div class="radio-item"><input type="radio" name="q13a" value="Yes" id="q13a_yes"><label for="q13a_yes">Yes</label></div>
+          <div class="radio-item"><input type="radio" name="q13a" value="No" id="q13a_no"><label for="q13a_no">No</label></div>
+        </div>
+      </div>
+      <div class="field">
+        <label>b) Who services/maintains the server equipment?</label>
+        <input type="text" id="q13b" placeholder="Name or company">
+      </div>
+      <div class="field">
+        <label>c) Power control systems</label>
+        <select id="q13c">
+          <option value="">— Select —</option>
+          <option value="Uninterruptible">Uninterruptible Power Supply (UPS)</option>
+          <option value="Auto Shut-down">Auto Shut-down</option>
+          <option value="None">None</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Q14 -->
+    <div class="section-title">Q14 — Document Disposal</div>
+    <div class="field">
+      <label>a) How do you destroy confidential documents?</label>
+      <select id="q14a">
+        <option value="">— Select —</option>
+        <option value="With A Paper Shredder">With a Paper Shredder</option>
+        <option value="We dispose in a different manner">We dispose in a different manner</option>
+      </select>
+    </div>
+    <div class="field conditional" id="q14b_wrap">
+      <label>b) Are the shredder bins locked?</label>
+      <select id="q14b">
+        <option value="">— Select —</option>
+        <option value="The Shredder Bins Are Locked">The Shredder Bins Are Locked</option>
+        <option value="Anyone Can Get Access">Anyone Can Get Access</option>
+      </select>
+    </div>
+    <div class="field conditional" id="q14c_wrap">
+      <label>c) If no shredder, how do you dispose of confidential documents?</label>
+      <textarea id="q14c" placeholder="Describe your document disposal method..."></textarea>
+    </div>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-back" onclick="prevPage()">&larr; Back</button>
+    <button class="btn btn-next" onclick="nextPage()">Next &rarr;</button>
+  </div>
+</div>
+
+<!-- PAGE 5: Security Continued + Acknowledgment -->
+<div class="page" id="page-5">
+  <div class="card">
+    <div class="card-title">Security Continued — Questions 15–20</div>
+
+    <div class="field">
+      <label>Q15 — Location of equipment (desktop/laptop) used to access credit reports</label>
+      <textarea id="q15" placeholder="Describe where this equipment is located..."></textarea>
+    </div>
+    <div class="field">
+      <label>Q16 — If access to equipment is not restricted, is it secured by a PC lock?</label>
+      <div class="radio-group inline">
+        <div class="radio-item"><input type="radio" name="q16" value="Yes" id="q16_yes"><label for="q16_yes">Yes</label></div>
+        <div class="radio-item"><input type="radio" name="q16" value="No" id="q16_no"><label for="q16_no">No</label></div>
+        <div class="radio-item"><input type="radio" name="q16" value="N/A" id="q16_na"><label for="q16_na">N/A</label></div>
+      </div>
+    </div>
+    <div class="field">
+      <label>Q17 — Is the server/PC password protected?</label>
+      <div class="radio-group inline">
+        <div class="radio-item"><input type="radio" name="q17" value="Yes" id="q17_yes"><label for="q17_yes">Yes</label></div>
+        <div class="radio-item"><input type="radio" name="q17" value="No" id="q17_no"><label for="q17_no">No</label></div>
+      </div>
+    </div>
+    <div class="field">
+      <label>Q18 — Is the server/PC viewable by non-employees?</label>
+      <div class="radio-group inline">
+        <div class="radio-item"><input type="radio" name="q18" value="Yes" id="q18_yes"><label for="q18_yes">Yes</label></div>
+        <div class="radio-item"><input type="radio" name="q18" value="No" id="q18_no"><label for="q18_no">No</label></div>
+      </div>
+    </div>
+    <div class="field">
+      <label>Q19 — Who performs maintenance/repair on the computers?</label>
+      <input type="text" id="q19" placeholder="Name or company providing IT maintenance">
+    </div>
+    <div class="field">
+      <label>Q20 — Are the computers installed with current anti-virus/anti-malware software?</label>
+      <div class="radio-group inline">
+        <div class="radio-item"><input type="radio" name="q20" value="Yes" id="q20_yes"><label for="q20_yes">Yes</label></div>
+        <div class="radio-item"><input type="radio" name="q20" value="No" id="q20_no"><label for="q20_no">No</label></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Inspector Acknowledgment</div>
+    <div class="legal-box">
+      I <strong id="ackNameInline">________</strong> have performed this virtual inspection on the premises described and concluded that all of the above information is correct. Photos and/or video are being forwarded expeditiously. I also acknowledge that I understand that the Federal Fair Credit Reporting Act requires that any person who knowingly and willfully obtains information on a consumer from a consumer reporting agency under false pretenses may be fined under Title 18, United States Code, imprisoned for not more than two (2) years, or both.
+    </div>
+
+    <div class="grid-2">
+      <div class="field">
+        <label>Phone Number <span class="req">*</span></label>
+        <input type="tel" id="ackPhone" placeholder="(000) 000-0000" class="phone-input">
+        <div class="field-error" id="err-ackPhone">This field is required.</div>
+      </div>
+      <div class="field">
+        <label>Name <span class="req">*</span></label>
+        <input type="text" id="ackName" placeholder="Your full name" oninput="document.getElementById('ackNameInline').textContent=this.value||'________'">
+        <div class="field-error" id="err-ackName">This field is required.</div>
+      </div>
+    </div>
+    <div class="field" style="max-width:300px">
+      <label>Title <span class="req">*</span></label>
+      <input type="text" id="ackTitle" placeholder="Your job title">
+      <div class="field-error" id="err-ackTitle">This field is required.</div>
+    </div>
+
+    <div class="field">
+      <label>Signature <span class="req">*</span></label>
+      <div class="sig-wrap">
+        <canvas class="sig-canvas" id="sigCanvas1"></canvas>
+        <div class="sig-actions"><button class="sig-clear" onclick="clearSig(1)">Clear Signature</button></div>
+      </div>
+      <div class="field-error" id="err-sig1">Please provide your signature.</div>
+    </div>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-back" onclick="prevPage()">&larr; Back</button>
+    <button class="btn btn-next" onclick="nextPage()">Next &rarr;</button>
+  </div>
+</div>
+
+<!-- PAGE 6: Marketing & Compliance -->
+<div class="page" id="page-6">
+  <div class="card">
+    <div class="card-title">Marketing &amp; Compliance</div>
+    <div class="card-desc">
+      This section covers your marketing preferences, compliance agreements, and terms and conditions for the MonitorBase platform. Please review each option carefully and provide your approval and signature below.
+    </div>
+
+    <div class="section-title">Email Marketing Approval</div>
+    <div class="field">
+      <label>Approve Email Firm Offers <span class="req">*</span></label>
+      <div class="check-group" style="margin-top:8px">
+        <div class="check-item"><input type="checkbox" id="mktEmail1"><label for="mktEmail1">Email Template — Firm Offer (Generic Branch Email Offer)</label></div>
+        <div class="check-item"><input type="checkbox" id="mktEmail2"><label for="mktEmail2">Email Offer — Personalized Originator Email Offer</label></div>
+      </div>
+      <div class="field-error" id="err-mktEmail">Please select at least one email offer type.</div>
+    </div>
+
+    <div class="section-title">Physical Firm Offer Letters</div>
+    <div class="field">
+      <label>Approve Physical Firm Offer Letters <span class="req">*</span></label>
+      <div class="check-group" style="margin-top:8px">
+        <div class="check-item"><input type="checkbox" id="mktMail1"><label for="mktMail1">Generic Branch Offer</label></div>
+        <div class="check-item"><input type="checkbox" id="mktMail2"><label for="mktMail2">Personalized Originator Offer</label></div>
+      </div>
+      <div class="field-error" id="err-mktMail">Please select at least one letter type.</div>
+    </div>
+
+    <div class="section-title">Email Setup</div>
+    <div class="field">
+      <label>Email URL <span class="req">*</span></label>
+      <input type="url" id="emailUrl" placeholder="https://your-email-domain.com">
+      <div class="field-error" id="err-emailUrl">Please enter a valid URL.</div>
+    </div>
+    <div class="field">
+      <label>Subject Line Preference <span class="req">*</span></label>
+      <select id="subjectPref">
+        <option value="">— Select preferred subject line —</option>
+        <option>Just Checking In</option>
+        <option>Would Love to Run This By You</option>
+        <option>Let Me Know If You Can Jump on a Call</option>
+        <option>Following Up with You</option>
+        <option>Let's Discuss This on a Call</option>
+        <option>Let's Catch Up</option>
+        <option>You Have Some Options We Can Discuss</option>
+        <option>Checking Back In</option>
+        <option>Just Circling Back to You</option>
+        <option>Just Following Up</option>
+        <option>Updates Since We Last Spoke</option>
+      </select>
+      <div class="field-error" id="err-subjectPref">Please select a subject line.</div>
+    </div>
+
+    <div class="section-title">Acceptance</div>
+    <div class="legal-box">
+      By signing below, you confirm that you have read, understood, and agree to all MonitorBase marketing terms, compliance requirements, and conditions outlined in this onboarding agreement. You authorize MonitorBase to conduct marketing activities on your behalf as selected above, in accordance with all applicable federal and state laws including the FCRA, CAN-SPAM Act, and applicable CFPB guidelines.
+    </div>
+
+    <div class="grid-2">
+      <div class="field">
+        <label>Name <span class="req">*</span></label>
+        <input type="text" id="mktName" placeholder="Full name">
+        <div class="field-error" id="err-mktName">This field is required.</div>
+      </div>
+      <div class="field">
+        <label>Title <span class="req">*</span></label>
+        <input type="text" id="mktTitle" placeholder="Job title">
+        <div class="field-error" id="err-mktTitle">This field is required.</div>
+      </div>
+    </div>
+    <div class="field" style="max-width:220px">
+      <label>Date <span class="req">*</span></label>
+      <input type="date" id="mktDate">
+      <div class="field-error" id="err-mktDate">Please select a date.</div>
+    </div>
+    <div class="field">
+      <label>Signature <span class="req">*</span></label>
+      <div class="sig-wrap">
+        <canvas class="sig-canvas" id="sigCanvas2"></canvas>
+        <div class="sig-actions"><button class="sig-clear" onclick="clearSig(2)">Clear Signature</button></div>
+      </div>
+      <div class="field-error" id="err-sig2">Please provide your signature.</div>
+    </div>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-back" onclick="prevPage()">&larr; Back</button>
+    <button class="btn btn-next" onclick="nextPage()">Next &rarr;</button>
+  </div>
+</div>
+
+<!-- PAGE 7: SoftPull Decision -->
+<div class="page" id="page-7">
+  <div class="card">
+    <div class="card-title">SoftPull Feature</div>
+    <div class="card-desc">The SoftPull feature allows you to pre-qualify prospective borrowers with a soft credit inquiry that does not affect their credit score. Please indicate whether you would like to enable this feature.</div>
+
+    <div class="field">
+      <label>Will you be utilizing the SoftPull feature? <span class="req">*</span></label>
+      <div class="big-radio-group" style="margin-top:16px">
+        <div class="big-radio-btn" id="softpull-yes-btn" onclick="selectSoftpull('Yes')">
+          <input type="radio" name="softpullDecision" value="Yes" id="softpull_yes">
+          <div class="big-radio-label">Yes</div>
+          <div class="big-radio-sub">Enable SoftPull pre-qualification</div>
+        </div>
+        <div class="big-radio-btn" id="softpull-no-btn" onclick="selectSoftpull('No')">
+          <input type="radio" name="softpullDecision" value="No" id="softpull_no">
+          <div class="big-radio-label">No</div>
+          <div class="big-radio-sub">Skip this feature for now</div>
+        </div>
+      </div>
+      <div class="field-error" id="err-softpullDecision">Please select Yes or No.</div>
+    </div>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-back" onclick="prevPage()">&larr; Back</button>
+    <button class="btn btn-next" onclick="nextPage()">Next &rarr;</button>
+  </div>
+</div>
+
+<!-- PAGE 8: SoftPull Setup (conditional) -->
+<div class="page" id="page-8">
+  <div class="card">
+    <div class="card-title">SoftPull Setup</div>
+    <div class="card-desc">
+      The SoftPull pre-qualification feature enables you to identify prospective borrowers who meet your minimum credit criteria before making a firm credit offer. Configure your programs below and review the full terms and conditions.
+    </div>
+
+    <div class="section-title">Program Configuration</div>
+    <div class="grid-2">
+      <div class="field">
+        <label>Program 1 Name <span class="req">*</span></label>
+        <input type="text" id="sp_prog1_name" placeholder="e.g., Conventional Purchase">
+        <div class="field-error" id="err-sp_prog1_name">This field is required.</div>
+      </div>
+      <div class="field">
+        <label>Program 1 Minimum FICO <span class="req">*</span></label>
+        <input type="number" id="sp_prog1_fico" placeholder="620" min="300" max="850">
+        <div class="field-error" id="err-sp_prog1_fico">This field is required.</div>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="field">
+        <label>Program 2 Name <span class="req">*</span></label>
+        <input type="text" id="sp_prog2_name" placeholder="e.g., FHA Refinance">
+        <div class="field-error" id="err-sp_prog2_name">This field is required.</div>
+      </div>
+      <div class="field">
+        <label>Program 2 Minimum FICO <span class="req">*</span></label>
+        <input type="number" id="sp_prog2_fico" placeholder="580" min="300" max="850">
+        <div class="field-error" id="err-sp_prog2_fico">This field is required.</div>
+      </div>
+    </div>
+
+    <div class="section-title">Terms &amp; Conditions</div>
+    <div class="legal-box" style="max-height:300px;overflow-y:auto;font-size:12px;line-height:1.7">
+      <strong>SoftPull Pre-Qualification Terms &amp; Conditions</strong><br><br>
+      <strong>Positive Outcome:</strong> If a consumer meets your specified minimum credit criteria, MonitorBase will notify you via your configured alert system. You may then contact the consumer with a firm offer of credit as permitted under the Fair Credit Reporting Act (FCRA), 15 U.S.C. § 1681 et seq., specifically under the prescreening provisions of § 1681b(c).<br><br>
+      <strong>Negative Outcome:</strong> If a consumer does not meet your minimum criteria, no notification will be sent and no action will be taken. The consumer will not be contacted in connection with this inquiry.<br><br>
+      <strong>Full Terms &amp; Conditions:</strong> By participating in the MonitorBase SoftPull program, you (the "Subscriber") agree to the following:<br><br>
+      1. <strong>FCRA Compliance:</strong> Subscriber agrees to use SoftPull data solely for permissible purposes under the FCRA, including but not limited to the prescreened firm offer of credit provisions. Subscriber will not use this data for any other purpose without separate written authorization.<br><br>
+      2. <strong>Firm Offer Requirement:</strong> Any contact with a consumer identified through SoftPull must include a bona fide firm offer of credit as defined under the FCRA. Subscriber is solely responsible for ensuring all firm offers comply with applicable law.<br><br>
+      3. <strong>Opt-Out Compliance:</strong> Subscriber must honor all consumer opt-out requests as required by 15 U.S.C. § 1681b(e) and must maintain procedures to remove opted-out consumers from contact lists.<br><br>
+      4. <strong>Data Security:</strong> Subscriber agrees to maintain reasonable data security measures to protect consumer information obtained through SoftPull, consistent with the Safeguards Rule under the Gramm-Leach-Bliley Act.<br><br>
+      5. <strong>Consent to Contact:</strong> By signing below, Subscriber acknowledges and consents to MonitorBase accessing consumer credit file data for the purpose of matching against the specified FICO criteria, and authorizes MonitorBase to generate alerts and notifications on Subscriber's behalf.<br><br>
+      6. <strong>Indemnification:</strong> Subscriber shall indemnify and hold harmless MonitorBase, its officers, directors, and employees from any claim, liability, loss, or expense arising from Subscriber's use of SoftPull data or violation of any applicable law.<br><br>
+      7. <strong>Term &amp; Termination:</strong> This authorization remains in effect until cancelled in writing. MonitorBase reserves the right to suspend or terminate SoftPull access for any Subscriber found to be in violation of these terms or applicable law.<br><br>
+      By signing below, you confirm you have read, understood, and agree to all SoftPull Terms &amp; Conditions stated above.
+    </div>
+
+    <div class="field">
+      <label>SoftPull URL <span class="req">*</span></label>
+      <input type="url" id="sp_url" placeholder="https://your-softpull-url.com">
+      <div class="field-error" id="err-sp_url">Please enter a valid URL.</div>
+    </div>
+
+    <div class="grid-2">
+      <div class="field">
+        <label>Name <span class="req">*</span></label>
+        <input type="text" id="sp_name" placeholder="Full name">
+        <div class="field-error" id="err-sp_name">This field is required.</div>
+      </div>
+      <div class="field">
+        <label>Title <span class="req">*</span></label>
+        <input type="text" id="sp_title" placeholder="Job title">
+        <div class="field-error" id="err-sp_title">This field is required.</div>
+      </div>
+    </div>
+    <div class="field" style="max-width:220px">
+      <label>Date <span class="req">*</span></label>
+      <input type="date" id="sp_date">
+      <div class="field-error" id="err-sp_date">Please select a date.</div>
+    </div>
+    <div class="field">
+      <label>Signature <span class="req">*</span></label>
+      <div class="sig-wrap">
+        <canvas class="sig-canvas" id="sigCanvas3"></canvas>
+        <div class="sig-actions"><button class="sig-clear" onclick="clearSig(3)">Clear Signature</button></div>
+      </div>
+      <div class="field-error" id="err-sig3">Please provide your signature.</div>
+    </div>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-back" onclick="prevPage()">&larr; Back</button>
+    <button class="btn btn-next" onclick="nextPage()">Next &rarr;</button>
+  </div>
+</div>
+
+<!-- PAGE 9: Lender Authorization (Broker only) -->
+<div class="page" id="page-9">
+  <div class="card">
+    <div class="card-title">Mortgage Broker — Lender Authorization</div>
+    <div class="card-desc">Please check each lender you are authorized to do business with. This section applies to Mortgage Brokers only.</div>
+
+    <div class="lender-grid" id="lenderGrid">
+      <!-- populated by JS -->
+    </div>
+
+    <div class="field" style="margin-top:16px">
+      <div class="check-item">
+        <input type="checkbox" id="lenderOther" onchange="document.getElementById('lenderOtherText').style.display=this.checked?'block':'none'">
+        <label for="lenderOther">Other</label>
+      </div>
+      <input type="text" id="lenderOtherText" placeholder="Specify other lender(s)" style="display:none;margin-top:8px">
+    </div>
+
+    <div class="field" style="max-width:300px">
+      <label>Name</label>
+      <input type="text" id="lenderAuthName" placeholder="Authorized signatory name">
+    </div>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-back" onclick="prevPage()">&larr; Back</button>
+    <button class="btn btn-next" onclick="nextPage()">Next &rarr;</button>
+  </div>
+</div>
+
+<!-- PAGE 10: MonitorBase Setup -->
+<div class="page" id="page-10">
+  <div class="card">
+    <div class="card-title">MonitorBase Setup</div>
+    <div class="card-desc">Please complete the following setup details to activate your MonitorBase account.</div>
+
+    <div class="section-title">Minimum Credit Criteria</div>
+    <div class="field">
+      <label>Select your minimum credit criteria <span class="req">*</span></label>
+      <div class="radio-group" style="margin-top:10px;gap:12px">
+        <div class="radio-item" style="align-items:flex-start">
+          <input type="radio" name="creditCriteria" value="620" id="cc_620" style="margin-top:3px">
+          <label for="cc_620">The FICO score must be 620+, no open or discharged bankruptcies within the last 24 months, and no foreclosures within the last 3 years. Additionally, they can have no late payments on their mortgage within the last 12 months.</label>
+        </div>
+        <div class="radio-item" style="align-items:flex-start">
+          <input type="radio" name="creditCriteria" value="580" id="cc_580" style="margin-top:3px">
+          <label for="cc_580">The FICO score must be 580+, no open or discharged bankruptcies within the last 24 months, and no foreclosures within the last 3 years. Additionally, they can have no late payments on their mortgage within the last 12 months.</label>
+        </div>
+      </div>
+      <div class="field-error" id="err-creditCriteria">Please select a minimum credit criteria.</div>
+    </div>
+
+    <div class="section-title">Billing Contact</div>
+    <div class="field">
+      <div class="check-item">
+        <input type="checkbox" id="billingSame" onchange="toggleBilling(this.checked)">
+        <label for="billingSame">Billing contact is same as Primary Contact</label>
+      </div>
+    </div>
+    <div id="billingFields">
+      <div class="grid-2">
+        <div class="field">
+          <label>Billing Contact Name</label>
+          <input type="text" id="billingName" placeholder="Full name">
+        </div>
+        <div class="field">
+          <label>Billing Contact Phone</label>
+          <input type="tel" id="billingPhone" placeholder="(000) 000-0000" class="phone-input">
+        </div>
+      </div>
+      <div class="field">
+        <label>Billing Contact Email</label>
+        <input type="email" id="billingEmail" placeholder="billing@example.com">
+      </div>
+    </div>
+
+    <div class="section-title">MonitorBase Company Admin</div>
+    <div class="grid-2">
+      <div class="field">
+        <label>Admin Full Name</label>
+        <input type="text" id="adminName" placeholder="Full name">
+      </div>
+      <div class="field">
+        <label>Admin Email</label>
+        <input type="email" id="adminEmail" placeholder="admin@example.com">
+      </div>
+    </div>
+    <div class="grid-3">
+      <div class="field">
+        <label>NMLS Number</label>
+        <input type="text" id="adminNMLS" placeholder="NMLS #">
+      </div>
+      <div class="field">
+        <label>Admin Cell Number</label>
+        <input type="tel" id="adminCell" placeholder="(000) 000-0000" class="phone-input">
+      </div>
+      <div class="field">
+        <label>Branch Phone Number</label>
+        <input type="tel" id="branchPhone" placeholder="(000) 000-0000" class="phone-input">
+      </div>
+    </div>
+
+    <div class="section-title">Company Ownership Information</div>
+    <div class="field">
+      <label>Tax Identification Number <span class="req">*</span></label>
+      <input type="text" id="taxId" placeholder="XX-XXXXXXX">
+      <div class="field-error" id="err-taxId">This field is required.</div>
+    </div>
+    <div class="field">
+      <label>Identify Principal / Owners <span class="req">*</span></label>
+      <textarea id="principalOwners" placeholder="List all principals and owners with their ownership percentages..."></textarea>
+      <div class="field-error" id="err-principalOwners">This field is required.</div>
+    </div>
+    <div class="field">
+      <label>Are any owners or beneficiaries located in China, Iran, North Korea, Russia, Cuba, or Venezuela? <span class="req">*</span></label>
+      <div class="radio-group inline">
+        <div class="radio-item"><input type="radio" name="restrictedCountry" value="Yes" id="rc_yes"><label for="rc_yes">Yes</label></div>
+        <div class="radio-item"><input type="radio" name="restrictedCountry" value="No" id="rc_no"><label for="rc_no">No</label></div>
+      </div>
+      <div class="field-error" id="err-restrictedCountry">Please select Yes or No.</div>
+    </div>
+    <div class="field">
+      <label>Identify any Technical Providers or Agents (CRM or LOS hosting credit data)</label>
+      <input type="text" id="techProviders" placeholder="List providers, or enter N/A if none">
+      <div class="field-hint">Enter N/A if no technical providers or agents apply.</div>
+    </div>
+  </div>
+
+  <div class="error-banner" id="submitErrorBanner">There was a problem submitting the form. Please check your connection and try again.</div>
+
+  <div class="btn-row">
+    <button class="btn btn-back" onclick="prevPage()">&larr; Back</button>
+    <button class="btn btn-submit" id="submitBtn" onclick="submitForm()">
+      Submit Application
+      <span class="spinner" id="submitSpinner"></span>
+    </button>
+  </div>
+</div>
+
+</div><!-- end main -->
+
+<!-- Loading overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-card">
+    <div class="loading-spinner-lg"></div>
+    <p id="loadingMsg">Uploading file...</p>
+  </div>
+</div>
+
+<script>
+// ─── State ────────────────────────────────────────────────────────────────────
+const formData = {};
+let currentPage = 1;
+let signaturePads = {};
+const uploadedUrls = {};
+
+// Page visibility: which logical pages are active
+// Pages 8 and 9 are conditional
+function getPageSequence() {
+  const industry = document.getElementById('industryType')?.value || '';
+  const softpull = document.querySelector('input[name="softpullDecision"]:checked')?.value || '';
+  const seq = [1,2,3,4,5,6,7];
+  if (softpull === 'Yes') seq.push(8);
+  if (industry === 'Mortgage Broker') seq.push(9);
+  seq.push(10);
+  return seq;
+}
+
+// ─── Lenders ──────────────────────────────────────────────────────────────────
+const LENDERS = [
+  'Quicken Loans','Freedom Mortgage','Loan Depot','United Wholesale Mortgage',
+  'Wells Fargo','JP Morgan Chase','Fairway Independent Mortgage','US Bank',
+  'Guaranteed Rate','Caliber Home Loans','Bank Of America','CMG Mortgage'
+];
+(function buildLenders(){
+  const g = document.getElementById('lenderGrid');
+  LENDERS.forEach(l => {
+    const id = 'lender_'+l.replace(/\s+/g,'_');
+    g.innerHTML += `<div class="check-item"><input type="checkbox" id="${id}" value="${l}"><label for="${id}">${l}</label></div>`;
+  });
+})();
+
+// ─── Upload Zones ─────────────────────────────────────────────────────────────
+const UPLOAD_DEFS = [
+  {container:'upload-exterior', field:'photoExterior'},
+  {container:'upload-reception', field:'photoReception'},
+  {container:'upload-workspace', field:'photoWorkspace'},
+  {container:'upload-files', field:'photoFiles'},
+  {container:'upload-servers', field:'photoServers'},
+  {container:'upload-shredder', field:'photoShredder'},
+  {container:'upload-logo', field:'companyLogo'},
+  {container:'upload-photoid', field:'photoId'},
+  {container:'upload-lease', field:'leaseDoc'},
+];
+
+function buildUploadZone(containerId, fieldKey, required) {
+  const c = document.getElementById(containerId);
+  if (!c) return;
+  c.innerHTML = `
+    <div class="upload-zone" id="zone-${fieldKey}" onclick="triggerUpload('${fieldKey}')">
+      <div class="upload-icon">&#x1F4C4;</div>
+      <div class="upload-text">Drag &amp; drop here or <strong>click to browse</strong></div>
+      <div class="upload-text" style="font-size:11px;margin-top:4px">Accepted: JPG, PNG, PDF, GIF</div>
+      <div class="upload-progress" id="prog-${fieldKey}"><div class="upload-progress-bar" id="progbar-${fieldKey}"></div></div>
+    </div>
+    <div class="upload-preview" id="preview-${fieldKey}">
+      <img id="previewImg-${fieldKey}" src="" alt="Preview">
+      <div class="upload-filename" id="fname-${fieldKey}"></div>
+    </div>
+    <input type="file" id="file-${fieldKey}" class="upload-hidden" accept="image/*,application/pdf" onchange="handleFile(event,'${fieldKey}')">
+  `;
+
+  const zone = document.getElementById('zone-'+fieldKey);
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('dragover');
+    const files = e.dataTransfer.files;
+    if (files[0]) processUpload(files[0], fieldKey);
+  });
+}
+
+function triggerUpload(field) {
+  document.getElementById('file-'+field)?.click();
+}
+function handleFile(e, field) {
+  const file = e.target.files[0];
+  if (file) processUpload(file, field);
+}
+
+async function processUpload(file, field) {
+  const prog = document.getElementById('prog-'+field);
+  const progbar = document.getElementById('progbar-'+field);
+  const zone = document.getElementById('zone-'+field);
+  const preview = document.getElementById('preview-'+field);
+  const previewImg = document.getElementById('previewImg-'+field);
+  const fname = document.getElementById('fname-'+field);
+
+  prog.classList.add('show');
+  progbar.style.width = '20%';
+
+  if (file.type.startsWith('image/')) {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      previewImg.src = ev.target.result;
+      preview.classList.add('show');
+      formData[field + '_base64'] = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  try {
+    const url = await uploadToCloudinary(file, (pct) => {
+      progbar.style.width = pct + '%';
+    });
+    uploadedUrls[field] = url;
+    formData[field] = url;
+    zone.classList.add('uploaded');
+    fname.textContent = '✓ ' + file.name + ' uploaded';
+    prog.classList.remove('show');
+
+    // Clear error if present
+    const err = document.getElementById('err-'+field);
+    if (err) { err.classList.remove('show'); }
+
+    const input = document.getElementById('file-'+field);
+    if (input) input.classList.remove('error');
+  } catch(err) {
+    progbar.style.width = '0';
+    prog.classList.remove('show');
+    fname.textContent = 'Upload failed — please try again';
+    fname.style.color = 'var(--red)';
+    preview.classList.add('show');
+    console.error('Upload error:', err);
+  }
+}
+
+async function uploadToCloudinary(file, onProgress) {
+  if (CONFIG.cloudinary_cloud_name === 'YOUR_CLOUD_NAME') {
+    // Demo mode: simulate upload
+    return new Promise(resolve => {
+      let p = 0;
+      const t = setInterval(() => {
+        p += 20;
+        onProgress(Math.min(p, 95));
+        if (p >= 100) { clearInterval(t); resolve('https://demo.cloudinary.com/sample-uploaded-file'); }
+      }, 200);
+    });
+  }
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('upload_preset', CONFIG.cloudinary_upload_preset);
+
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `https://api.cloudinary.com/v1_1/${CONFIG.cloudinary_cloud_name}/auto/upload`);
+    xhr.upload.onprogress = e => {
+      if (e.lengthComputable) onProgress(Math.round(e.loaded/e.total*90));
+    };
+    xhr.onload = () => {
+      if (xhr.status === 200) {
+        const r = JSON.parse(xhr.responseText);
+        onProgress(100);
+        resolve(r.secure_url);
+      } else reject(new Error('Upload failed: '+xhr.status));
+    };
+    xhr.onerror = () => reject(new Error('Network error'));
+    xhr.send(fd);
+  });
+}
+
+// ─── Signature Pads ───────────────────────────────────────────────────────────
+function initSigPad(id) {
+  const canvas = document.getElementById('sigCanvas'+id);
+  if (!canvas || signaturePads[id]) return;
+  const pad = new SignaturePad(canvas, { minWidth:1, maxWidth:2.5, penColor:'#003366' });
+  signaturePads[id] = pad;
+  // Resize
+  function resize() {
+    const ratio = window.devicePixelRatio || 1;
+    canvas.width = canvas.offsetWidth * ratio;
+    canvas.height = canvas.offsetHeight * ratio;
+    canvas.getContext('2d').scale(ratio, ratio);
+    pad.clear();
+  }
+  window.addEventListener('resize', resize);
+  resize();
+}
+function clearSig(id) {
+  if (signaturePads[id]) signaturePads[id].clear();
+  // Clear any stored URL
+  formData['signature'+id] = null;
+  uploadedUrls['signature'+id] = null;
+}
+async function captureSig(id) {
+  const pad = signaturePads[id];
+  if (!pad || pad.isEmpty()) return false;
+  const b64 = pad.toDataURL('image/png');
+  formData['signature'+id+'_base64'] = b64;
+  // Upload to cloudinary
+  try {
+    const blob = await (await fetch(b64)).blob();
+    const file = new File([blob], 'signature'+id+'.png', {type:'image/png'});
+    const url = await uploadToCloudinary(file, ()=>{});
+    formData['signature'+id+'_url'] = url;
+    uploadedUrls['signature'+id] = url;
+  } catch(e) { /* non-fatal */ }
+  return true;
+}
+
+// ─── Phone formatting ─────────────────────────────────────────────────────────
+document.addEventListener('input', e => {
+  if (e.target.classList.contains('phone-input')) {
+    let v = e.target.value.replace(/\D/g,'');
+    if (v.length > 10) v = v.slice(0,10);
+    let f = '';
+    if (v.length > 0) f = '(' + v.slice(0,3);
+    if (v.length >= 4) f += ') ' + v.slice(3,6);
+    if (v.length >= 7) f += '-' + v.slice(6,10);
+    e.target.value = f;
+  }
+});
+
+// ─── Geolocation ──────────────────────────────────────────────────────────────
+function captureLocation() {
+  if (!navigator.geolocation) {
+    document.getElementById('geoCoords').value = 'Geolocation not supported by this browser.';
+    return;
+  }
+  document.getElementById('geoCoords').value = 'Detecting location...';
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      const coords = `${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`;
+      document.getElementById('geoCoords').value = coords;
+      formData.geolocation = coords;
+    },
+    err => {
+      document.getElementById('geoCoords').value = 'Location access denied or unavailable.';
+    },
+    { enableHighAccuracy: true, timeout: 10000 }
+  );
+}
+
+// ─── Conditionals ─────────────────────────────────────────────────────────────
+function setupConditionals() {
+  // Q1a -> Q1b
+  document.querySelectorAll('input[name="q1a"]').forEach(r => r.addEventListener('change', () => {
+    toggleShow('q1b_wrap', r.value === 'No');
+  }));
+  // Q1c -> Q1d
+  document.querySelectorAll('input[name="q1c"]').forEach(r => r.addEventListener('change', () => {
+    toggleShow('q1d_wrap', r.value === 'No');
+  }));
+  // Q2a -> Q3
+  document.getElementById('q2a').addEventListener('change', () => {
+    toggleShow('q3_wrap', document.getElementById('q2a').value === 'Apartment');
+  });
+  // Q4a -> Q4b
+  document.querySelectorAll('input[name="q4a"]').forEach(r => r.addEventListener('change', () => {
+    toggleShow('q4b_wrap', r.value === 'No');
+  }));
+  // Q5a -> Q5 detail
+  document.querySelectorAll('input[name="q5a"]').forEach(r => r.addEventListener('change', () => {
+    toggleShow('q5_detail', r.value === 'Yes');
+  }));
+  // Q7a -> Q7b/c/d
+  document.querySelectorAll('input[name="q7a"]').forEach(r => r.addEventListener('change', () => {
+    toggleShow('q7b_wrap', r.value === 'Yes');
+    toggleShow('q7c_wrap', r.value === 'No');
+    toggleShow('q7d_wrap', r.value === 'Yes');
+  }));
+  // Q7d -> Q7e
+  document.querySelectorAll('input[name="q7d"]').forEach(r => r.addEventListener('change', () => {
+    toggleShow('q7e_wrap', r.value === 'No');
+  }));
+  // Q10d -> Q10e
+  document.querySelectorAll('input[name="q10d"]').forEach(r => r.addEventListener('change', () => {
+    toggleShow('q10e_wrap', r.value === 'Yes');
+  }));
+  // Q12a -> onsite
+  document.getElementById('q12a').addEventListener('change', () => {
+    const v = document.getElementById('q12a').value;
+    toggleShow('q12_onsite', v === 'On-site');
+    toggleShow('q13_wrap', v === 'On-site');
+  });
+  // Q14a -> Q14b/c
+  document.getElementById('q14a').addEventListener('change', () => {
+    const v = document.getElementById('q14a').value;
+    toggleShow('q14b_wrap', v === 'With A Paper Shredder');
+    toggleShow('q14c_wrap', v === 'We dispose in a different manner');
+  });
+  // Industry -> photo ID
+  document.getElementById('industryType').addEventListener('change', () => {
+    const v = document.getElementById('industryType').value;
+    toggleShow('photoIdField', v === 'Mortgage Broker');
+    updateProgressBar();
+  });
+}
+
+function toggleShow(id, show) {
+  const el = document.getElementById(id);
+  if (el) el.classList.toggle('show', show);
+}
+
+// ─── SoftPull big buttons ─────────────────────────────────────────────────────
+function selectSoftpull(val) {
+  document.getElementById('softpull_yes').checked = val === 'Yes';
+  document.getElementById('softpull_no').checked = val === 'No';
+  document.getElementById('softpull-yes-btn').classList.toggle('selected', val === 'Yes');
+  document.getElementById('softpull-no-btn').classList.toggle('selected', val === 'No');
+  updateProgressBar();
+}
+
+// ─── Billing toggle ───────────────────────────────────────────────────────────
+function toggleBilling(same) {
+  document.getElementById('billingFields').style.display = same ? 'none' : 'block';
+}
+
+// ─── Progress bar ─────────────────────────────────────────────────────────────
+function updateProgressBar() {
+  const seq = getPageSequence();
+  const totalSteps = seq.length;
+  const stepIndex = seq.indexOf(currentPage);
+  const displayStep = stepIndex + 1;
+  const pct = (displayStep / totalSteps) * 100;
+
+  document.getElementById('progressBar').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = `Step ${displayStep} of ${totalSteps}`;
+
+  const dots = document.getElementById('stepDots');
+  dots.innerHTML = '';
+  seq.forEach((pageNum, i) => {
+    const d = document.createElement('div');
+    d.className = 'step-dot' + (i < stepIndex ? ' done' : i === stepIndex ? ' active' : '');
+    dots.appendChild(d);
+  });
+}
+
+// ─── Navigation ───────────────────────────────────────────────────────────────
+function showPage(pageNum) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const el = document.getElementById('page-'+pageNum);
+  if (el) {
+    el.classList.add('active');
+    // Init signature pads on relevant pages
+    if (pageNum === 5) { initSigPad(1); }
+    if (pageNum === 6) { initSigPad(2); }
+    if (pageNum === 8) { initSigPad(3); }
+    // Auto-request location on page 2
+    if (pageNum === 2 && !formData.geolocation) captureLocation();
+  }
+  window.scrollTo({top:0, behavior:'smooth'});
+  currentPage = pageNum;
+  updateProgressBar();
+}
+
+async function nextPage() {
+  if (!validatePage(currentPage)) return;
+  await savePage(currentPage);
+
+  const seq = getPageSequence();
+  const idx = seq.indexOf(currentPage);
+  if (idx < seq.length - 1) {
+    showPage(seq[idx + 1]);
+  }
+}
+
+function prevPage() {
+  const seq = getPageSequence();
+  const idx = seq.indexOf(currentPage);
+  if (idx > 0) showPage(seq[idx - 1]);
+}
+
+// Save data from current page
+async function savePage(pageNum) {
+  function val(id) {
+    const el = document.getElementById(id);
+    return el ? el.value : '';
+  }
+  function radio(name) {
+    const el = document.querySelector(`input[name="${name}"]:checked`);
+    return el ? el.value : '';
+  }
+  function checked(id) {
+    const el = document.getElementById(id);
+    return el ? el.checked : false;
+  }
+
+  if (pageNum === 1) {
+    Object.assign(formData, {
+      businessName: val('businessName'), dba: val('dba'),
+      processedBy: val('processedBy'), industryType: val('industryType'),
+      primaryContact: val('primaryContact'), primaryEmail: val('primaryEmail'),
+      primaryPhone: val('primaryPhone'), timeAtAddress: val('timeAtAddress'),
+      addrStreet: val('addrStreet'), addrStreet2: val('addrStreet2'),
+      addrCity: val('addrCity'), addrState: val('addrState'), addrZip: val('addrZip'),
+      startDate: val('startDate'), endDate: val('endDate'),
+    });
+  }
+  if (pageNum === 2) {
+    Object.assign(formData, {
+      noLogoPromo: checked('noLogoPromo'),
+      photoType: val('photoType'), photoTakenBy: val('photoTakenBy'),
+      photoDate: val('photoDate'),
+    });
+  }
+  if (pageNum === 3) {
+    Object.assign(formData, {
+      q1a: radio('q1a'), q1b: val('q1b'), q1c: radio('q1c'), q1d: val('q1d'),
+      q2a: val('q2a'), q2b: radio('q2b'), q2c: radio('q2c'),
+      q2d_name: val('q2d_name'), q2d_phone: val('q2d_phone'),
+      q3a: checked('q3a'), q3b: checked('q3b'), q3c: checked('q3c'),
+      q4a: radio('q4a'), q4b: val('q4b'),
+      q5a: radio('q5a'), q5b: val('q5b'), q5c: radio('q5c'), q5d: val('q5d'),
+      q6a: radio('q6a'), q6b: val('q6b'),
+      q7a: radio('q7a'), q7b: val('q7b'), q7c: val('q7c'), q7d: radio('q7d'), q7e: val('q7e'),
+      q8a: radio('q8a'), q8b: val('q8b'), q9c: val('q9c'),
+    });
+  }
+  if (pageNum === 4) {
+    Object.assign(formData, {
+      q10a: val('q10a'), q10b: val('q10b'), q10c: radio('q10c'), q10d: radio('q10d'), q10e: radio('q10e'),
+      q11: val('q11'),
+      q12a: val('q12a'), q12b: radio('q12b'), q12c: val('q12c'),
+      q13a: radio('q13a'), q13b: val('q13b'), q13c: val('q13c'),
+      q14a: val('q14a'), q14b: val('q14b'), q14c: val('q14c'),
+    });
+  }
+  if (pageNum === 5) {
+    await captureSig(1);
+    Object.assign(formData, {
+      q15: val('q15'), q16: radio('q16'), q17: radio('q17'),
+      q18: radio('q18'), q19: val('q19'), q20: radio('q20'),
+      ackPhone: val('ackPhone'), ackName: val('ackName'), ackTitle: val('ackTitle'),
+    });
+  }
+  if (pageNum === 6) {
+    await captureSig(2);
+    Object.assign(formData, {
+      mktEmail1: checked('mktEmail1'), mktEmail2: checked('mktEmail2'),
+      mktMail1: checked('mktMail1'), mktMail2: checked('mktMail2'),
+      emailUrl: val('emailUrl'), subjectPref: val('subjectPref'),
+      mktName: val('mktName'), mktTitle: val('mktTitle'), mktDate: val('mktDate'),
+    });
+  }
+  if (pageNum === 7) {
+    formData.softpullDecision = radio('softpullDecision');
+  }
+  if (pageNum === 8) {
+    await captureSig(3);
+    Object.assign(formData, {
+      sp_prog1_name: val('sp_prog1_name'), sp_prog1_fico: val('sp_prog1_fico'),
+      sp_prog2_name: val('sp_prog2_name'), sp_prog2_fico: val('sp_prog2_fico'),
+      sp_url: val('sp_url'), sp_name: val('sp_name'), sp_title: val('sp_title'), sp_date: val('sp_date'),
+    });
+  }
+  if (pageNum === 9) {
+    const selected = [];
+    LENDERS.forEach(l => {
+      const id = 'lender_'+l.replace(/\s+/g,'_');
+      if (document.getElementById(id)?.checked) selected.push(l);
+    });
+    if (document.getElementById('lenderOther')?.checked) {
+      selected.push('Other: '+document.getElementById('lenderOtherText')?.value);
+    }
+    formData.lenders = selected.join(', ');
+    formData.lenderAuthName = document.getElementById('lenderAuthName')?.value;
+  }
+  if (pageNum === 10) {
+    Object.assign(formData, {
+      creditCriteria: document.querySelector('input[name="creditCriteria"]:checked')?.value,
+      billingSame: checked('billingSame'),
+      billingName: val('billingName'), billingPhone: val('billingPhone'), billingEmail: val('billingEmail'),
+      adminName: val('adminName'), adminEmail: val('adminEmail'),
+      adminNMLS: val('adminNMLS'), adminCell: val('adminCell'), branchPhone: val('branchPhone'),
+      taxId: val('taxId'), principalOwners: val('principalOwners'),
+      restrictedCountry: document.querySelector('input[name="restrictedCountry"]:checked')?.value,
+      techProviders: val('techProviders'),
+    });
+  }
+}
+
+// ─── Validation ───────────────────────────────────────────────────────────────
+function showErr(id, msg) {
+  const el = document.getElementById('err-'+id);
+  const inp = document.getElementById(id);
+  if (el) { el.textContent = msg || el.textContent; el.classList.add('show'); }
+  if (inp) inp.classList.add('error');
+}
+function clearErr(id) {
+  const el = document.getElementById('err-'+id);
+  const inp = document.getElementById(id);
+  if (el) el.classList.remove('show');
+  if (inp) inp.classList.remove('error');
+}
+function isVisible(id) {
+  const el = document.getElementById(id);
+  if (!el) return false;
+  return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
+}
+
+function validatePage(pageNum) {
+  let ok = true;
+  function req(id, msg) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const v = el.value?.trim();
+    if (!v) { showErr(id, msg); ok = false; } else clearErr(id);
+  }
+  function reqEmail(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const v = el.value?.trim();
+    const valid = v && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+    if (!valid) { showErr(id, 'Please enter a valid email address.'); ok = false; } else clearErr(id);
+  }
+  function reqPhone(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const v = el.value?.replace(/\D/g,'');
+    if (!v || v.length < 10) { showErr(id, 'Please enter a valid 10-digit phone number.'); ok = false; } else clearErr(id);
+  }
+  function reqRadio(name, errId) {
+    const el = document.querySelector(`input[name="${name}"]:checked`);
+    const errEl = document.getElementById('err-'+errId);
+    if (!el) { if(errEl){errEl.classList.add('show');} ok = false; }
+    else { if(errEl){errEl.classList.remove('show');} }
+  }
+  function reqUpload(field) {
+    if (!uploadedUrls[field]) { showErr(field, 'Please upload this required file.'); ok = false; } else clearErr(field);
+  }
+
+  if (pageNum === 1) {
+    req('businessName'); req('processedBy'); req('timeAtAddress');
+    req('addrStreet'); req('addrCity'); req('addrState'); req('addrZip');
+    reqEmail('primaryEmail'); req('primaryContact');
+    reqPhone('primaryPhone');
+    const ind = document.getElementById('industryType');
+    if (!ind.value) { showErr('industryType','Please select an industry type.'); ok=false; } else clearErr('industryType');
+  }
+
+  if (pageNum === 2) {
+    reqUpload('photoExterior'); reqUpload('photoReception'); reqUpload('photoWorkspace');
+    reqUpload('photoFiles'); reqUpload('photoServers'); reqUpload('photoShredder');
+    reqUpload('companyLogo');
+    if (document.getElementById('industryType').value === 'Mortgage Broker') {
+      reqUpload('photoId');
+    }
+    req('photoTakenBy'); req('photoDate');
+    const pt = document.getElementById('photoType');
+    if (!pt.value) { showErr('photoType','Please select an option.'); ok=false; } else clearErr('photoType');
+  }
+
+  if (pageNum === 3) {
+    reqRadio('q1a','q1a'); reqRadio('q1c','q1c');
+  }
+
+  if (pageNum === 5) {
+    req('ackPhone'); req('ackName'); req('ackTitle');
+    reqPhone('ackPhone');
+    const pad = signaturePads[1];
+    if (!pad || pad.isEmpty()) { document.getElementById('err-sig1').classList.add('show'); ok=false; }
+    else document.getElementById('err-sig1').classList.remove('show');
+  }
+
+  if (pageNum === 6) {
+    const e1=document.getElementById('mktEmail1').checked, e2=document.getElementById('mktEmail2').checked;
+    const eErr=document.getElementById('err-mktEmail');
+    if(!e1&&!e2){eErr.classList.add('show');ok=false;}else eErr.classList.remove('show');
+    const m1=document.getElementById('mktMail1').checked, m2=document.getElementById('mktMail2').checked;
+    const mErr=document.getElementById('err-mktMail');
+    if(!m1&&!m2){mErr.classList.add('show');ok=false;}else mErr.classList.remove('show');
+    req('emailUrl'); req('mktName'); req('mktTitle'); req('mktDate');
+    const sp=document.getElementById('subjectPref');
+    if(!sp.value){showErr('subjectPref','Please select a subject line.');ok=false;}else clearErr('subjectPref');
+    const pad=signaturePads[2];
+    if(!pad||pad.isEmpty()){document.getElementById('err-sig2').classList.add('show');ok=false;}
+    else document.getElementById('err-sig2').classList.remove('show');
+  }
+
+  if (pageNum === 7) {
+    reqRadio('softpullDecision','softpullDecision');
+  }
+
+  if (pageNum === 8) {
+    req('sp_prog1_name'); req('sp_prog2_name'); req('sp_url'); req('sp_name'); req('sp_title'); req('sp_date');
+    const f1=document.getElementById('sp_prog1_fico').value, f2=document.getElementById('sp_prog2_fico').value;
+    if(!f1){showErr('sp_prog1_fico','Required.');ok=false;}else clearErr('sp_prog1_fico');
+    if(!f2){showErr('sp_prog2_fico','Required.');ok=false;}else clearErr('sp_prog2_fico');
+    const pad=signaturePads[3];
+    if(!pad||pad.isEmpty()){document.getElementById('err-sig3').classList.add('show');ok=false;}
+    else document.getElementById('err-sig3').classList.remove('show');
+  }
+
+  if (pageNum === 10) {
+    req('taxId'); req('principalOwners');
+    reqRadio('creditCriteria','creditCriteria');
+    reqRadio('restrictedCountry','restrictedCountry');
+  }
+
+  if (!ok) {
+    // Scroll to first error
+    const firstErr = document.querySelector('.field-error.show');
+    if (firstErr) firstErr.scrollIntoView({behavior:'smooth', block:'center'});
+  }
+  return ok;
+}
+
+// ─── Submit ───────────────────────────────────────────────────────────────────
+async function submitForm() {
+  if (!validatePage(10)) return;
+  await savePage(10);
+
+  const btn = document.getElementById('submitBtn');
+  const spinner = document.getElementById('submitSpinner');
+  btn.disabled = true;
+  spinner.classList.add('show');
+  document.getElementById('submitErrorBanner').classList.remove('show');
+
+  try {
+    // Update loading message
+    document.getElementById('loadingMsg').textContent = 'Submitting your application...';
+    document.getElementById('loadingOverlay').classList.add('show');
+    await sendEmail();
+    document.getElementById('loadingMsg').textContent = 'Generating PDF...';
+    try { await generatePDF(); } catch(pdfErr) { console.warn('PDF generation failed:', pdfErr); }
+    document.getElementById('loadingOverlay').classList.remove('show');
+    showThankYou();
+  } catch(err) {
+    console.error('Submission error:', err);
+    document.getElementById('submitErrorBanner').classList.add('show');
+    document.getElementById('submitErrorBanner').textContent = 'Submission failed: ' + (err.message || 'Please check your connection and try again.');
+    btn.disabled = false;
+    spinner.classList.remove('show');
+  }
+}
+
+async function sendEmail() {
+  if (CONFIG.emailjs_public_key === 'YOUR_PUBLIC_KEY') {
+    // Demo: simulate email send
+    await new Promise(r => setTimeout(r, 1500));
+    return;
+  }
+
+  emailjs.init(CONFIG.emailjs_public_key);
+
+  const lines = [];
+  for (const [k, v] of Object.entries(formData)) {
+    if (v !== null && v !== undefined && v !== '') {
+      const label = k.replace(/_/g,' ').replace(/([A-Z])/g,' $1').trim();
+      lines.push(`${label}: ${v}`);
+    }
+  }
+
+  // Add all cloudinary URLs explicitly
+  const urlLines = [];
+  for (const [k, v] of Object.entries(uploadedUrls)) {
+    if (v) urlLines.push(`${k}: ${v}`);
+  }
+
+  const params = {
+    to_email: CONFIG.notification_email,
+    subject: `New Onboarding Submission - ${formData.businessName || 'Unknown'}`,
+    business_name: formData.businessName || '',
+    processed_by: formData.processedBy || '',
+    primary_email: formData.primaryEmail || '',
+    form_data: lines.join('\n'),
+    uploaded_files: urlLines.join('\n') || 'None',
+  };
+
+  await emailjs.send(CONFIG.emailjs_service_id, CONFIG.emailjs_template_id, params);
+}
+
+function showThankYou() {
+  document.getElementById('mainContent').style.display = 'none';
+  document.getElementById('thankYouPage').classList.add('show');
+  document.getElementById('thankYouPage').style.display = 'block';
+  // Rebuild the main area to just show thank you
+  const mainEl = document.querySelector('.main');
+  mainEl.innerHTML = `
+    <div class="thank-you show">
+      <div class="check-circle" style="color:var(--green)">&#x2713;</div>
+      <h2>Submission Complete!</h2>
+      <p>Thank you for completing the MonitorBase Credit Access Onboarding. Your information has been submitted successfully and a confirmation has been sent. Our team will review your application and be in touch shortly.</p>
+      <p style="margin-top:16px;font-size:13px;color:var(--muted)">Application submitted for: <strong>${formData.businessName || ''}</strong></p>
+    </div>
+  `;
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  setupConditionals();
+  updateProgressBar();
+  // Build upload zones (deferred since inner HTML set here)
+  UPLOAD_DEFS.forEach(d => buildUploadZone(d.container, d.field, false));
+});
+</script>
+
+<!-- Hidden PDF Template -->
+<div id="pdf-template" style="display:none; width:794px; font-family: Arial, sans-serif; color: #1a1a2e; background: white; position:fixed; left:-9999px; top:0;"></div>
+
+<script>
+// ─── PDF Generation ───────────────────────────────────────────────────────────
+
+function pill(text) {
+  if (!text) return '';
+  return `<span style="background:#f0f0f0;padding:3px 12px;border-radius:4px;font-size:13px;display:inline-block">${text}</span>`;
+}
+
+function row(label, value, isDropdown) {
+  if (!value && value !== 0) return '';
+  const displayVal = isDropdown ? pill(value) : `<span style="font-size:14px">${value}</span>`;
+  return `<div style="display:flex;margin-bottom:12px;align-items:flex-start;">
+    <div style="font-weight:bold;color:#1a1a2e;width:40%;min-width:200px;padding-right:16px;font-size:13px">${label}</div>
+    <div style="width:60%">${displayVal}</div>
+  </div>`;
+}
+
+function sectionHeader(title) {
+  return `<div style="font-size:16px;font-weight:bold;color:#0066cc;margin:24px 0 12px;padding-bottom:6px;border-bottom:2px solid #e0e6ef">${title}</div>`;
+}
+
+function photoRow(label, base64) {
+  if (!base64) return '';
+  return `<div style="display:flex;margin-bottom:16px;align-items:flex-start;">
+    <div style="font-weight:bold;color:#1a1a2e;width:40%;min-width:200px;padding-right:16px;font-size:13px">${label}</div>
+    <div style="width:60%"><img src="${base64}" style="max-width:350px;max-height:300px;border-radius:4px;border:1px solid #d0d7e3;object-fit:cover"></div>
+  </div>`;
+}
+
+function sigRow(label, dataUrl) {
+  if (!dataUrl) return '';
+  return `<div style="display:flex;margin-bottom:16px;align-items:flex-start;">
+    <div style="font-weight:bold;color:#1a1a2e;width:40%;min-width:200px;padding-right:16px;font-size:13px">${label}</div>
+    <div style="width:60%"><img src="${dataUrl}" style="max-width:250px;max-height:100px;border:1px solid #d0d7e3;border-radius:4px;background:#fff"></div>
+  </div>`;
+}
+
+function callout(text) {
+  return `<div style="border-left:4px solid #0066cc;background:#e8f4ff;padding:12px 16px;margin:12px 0;border-radius:0 4px 4px 0;">
+    <span style="color:#0066cc;font-style:italic;font-size:13px">${text}</span>
+  </div>`;
+}
+
+function populatePDFTemplate() {
+  const d = formData;
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-US', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+  
+  // Build lenders list
+  const lendersList = d.lenders || '';
+  
+  // Build marketing selections
+  const mktEmails = [];
+  if (d.mktEmail1) mktEmails.push('Email Template — Firm Offer (Generic Branch Email Offer)');
+  if (d.mktEmail2) mktEmails.push('Email Offer — Personalized Originator Email Offer');
+  const mktMails = [];
+  if (d.mktMail1) mktMails.push('Generic Branch Offer');
+  if (d.mktMail2) mktMails.push('Personalized Originator Offer');
+
+  // Build Q3 apartment checkboxes
+  const q3Items = [];
+  if (d.q3a) q3Items.push('Utilized as commercial office space during normal business hours only');
+  if (d.q3b) q3Items.push('Utilized as personal living quarters by resident');
+  if (d.q3c) q3Items.push('N/A');
+
+  let html = `
+    <div style="background:#e8eaf0;padding:24px 40px;margin-bottom:0;">
+      <div style="text-align:right;color:#555;margin-bottom:10px;font-size:13px">${dateStr}</div>
+      <h1 style="font-size:24px;font-weight:bold;color:#1a1a2e;margin:0 0 8px">End User Virtual Inspection Checklist</h1>
+    </div>
+    <div style="padding:24px 40px;">
+      <div style="display:flex;margin-bottom:20px;align-items:center;">
+        <div style="font-weight:bold;width:40%;min-width:200px;font-size:13px">Approval Status</div>
+        <div>${pill('In Progress')}</div>
+      </div>
+
+      ${sectionHeader('Company Information')}
+      ${row('Business Name', d.businessName)}
+      ${row('DBA / Doing Business As', d.dba)}
+      ${row('Processed By', d.processedBy)}
+      ${row('Industry Type', d.industryType, true)}
+      ${row('Primary Contact', d.primaryContact)}
+      ${row('Primary Email', d.primaryEmail)}
+      ${row('Primary Phone', d.primaryPhone)}
+      ${row('Time at Current Address', d.timeAtAddress)}
+      ${row('Street Address', d.addrStreet + (d.addrStreet2 ? ', ' + d.addrStreet2 : ''))}
+      ${row('City / State / ZIP', [d.addrCity, d.addrState, d.addrZip].filter(Boolean).join(', '))}
+      ${row('Start Date', d.startDate)}
+      ${row('End Date', d.endDate)}
+
+      ${sectionHeader('Virtual Site Inspection Photos')}
+      ${row('Geolocation Coordinates', d.geolocation)}
+      ${photoRow('1. Exterior — Permanent Company Signage', d.photoExterior_base64)}
+      ${photoRow('2. Interior — Reception Area', d.photoReception_base64)}
+      ${photoRow('3. Interior — Workspace / Computers', d.photoWorkspace_base64)}
+      ${photoRow('4. Interior — Consumer Files Secured', d.photoFiles_base64)}
+      ${photoRow('5. Interior — Business Servers', d.photoServers_base64)}
+      ${photoRow('6. Interior — Shredder or Shredder Bin', d.photoShredder_base64)}
+      ${photoRow('Company Logo', d.companyLogo_base64)}
+      ${d.noLogoPromo ? callout('Note: Company has requested MonitorBase NOT use their logo in promotional client lists.') : ''}
+      ${d.industryType === 'Mortgage Broker' ? photoRow('Photo ID', d.photoId_base64) : ''}
+      ${row('Photos Real Time or Static?', d.photoType, true)}
+      ${row('Photos Taken By', d.photoTakenBy)}
+      ${row('Date Photos Taken', d.photoDate)}
+
+      ${sectionHeader('Inspection Checklist — Questions 1–9')}
+      <div style="font-size:15px;font-weight:bold;color:#1a1a2e;margin:16px 0 8px">1. Address Verification</div>
+      ${row('a) Company at exact address on form?', d.q1a, true)}
+      ${d.q1a === 'No' ? row('b) Discrepancy explanation', d.q1b) : ''}
+      ${row('c) Location appropriate for business type?', d.q1c, true)}
+      ${d.q1c === 'No' ? row('d) Justification', d.q1d) : ''}
+
+      <div style="font-size:15px;font-weight:bold;color:#1a1a2e;margin:16px 0 8px">2. Facility Type</div>
+      ${row('a) Type of facility', d.q2a, true)}
+      ${row('b) Any part used for living quarters?', d.q2b, true)}
+      ${row('c) Executive suite or virtual office?', d.q2c, true)}
+      ${row('d) Landlord / Management Name', d.q2d_name)}
+      ${row('d) Landlord / Management Phone', d.q2d_phone)}
+
+      ${d.q2a === 'Apartment' && q3Items.length ? `
+      <div style="font-size:15px;font-weight:bold;color:#1a1a2e;margin:16px 0 8px">3. Apartment Use</div>
+      ${q3Items.map(i => row('', '&#x2713; ' + i)).join('')}
+      ` : ''}
+
+      <div style="font-size:15px;font-weight:bold;color:#1a1a2e;margin:16px 0 8px">4. Permanent Location</div>
+      ${row('a) Address is permanent office location?', d.q4a, true)}
+      ${d.q4a === 'No' ? row('b) Explanation', d.q4b) : ''}
+
+      <div style="font-size:15px;font-weight:bold;color:#1a1a2e;margin:16px 0 8px">5. Shared Office</div>
+      ${row('a) Office shared with another business?', d.q5a, true)}
+      ${d.q5a === 'Yes' ? row('b) Name and type of shared business', d.q5b) : ''}
+      ${d.q5a === 'Yes' ? row('c) Offices separated by lockable door?', d.q5c, true) : ''}
+      ${d.q5a === 'Yes' ? row('d) Relationship between companies', d.q5d) : ''}
+
+      <div style="font-size:15px;font-weight:bold;color:#1a1a2e;margin:16px 0 8px">6. Furnishings</div>
+      ${row('a) Appropriate furnishings present?', d.q6a, true)}
+      ${row('b) Customer files stored as', d.q6b, true)}
+
+      <div style="font-size:15px;font-weight:bold;color:#1a1a2e;margin:16px 0 8px">7. Signage</div>
+      ${row('a) Permanent company sign?', d.q7a, true)}
+      ${d.q7a === 'Yes' ? row('b) Sign location', d.q7b) : ''}
+      ${d.q7a === 'No' ? row('c) Why no sign?', d.q7c) : ''}
+      ${d.q7a === 'Yes' ? row('d) Sign matches company name?', d.q7d, true) : ''}
+      ${d.q7d === 'No' ? row('e) Exact name on sign', d.q7e) : ''}
+
+      <div style="font-size:15px;font-weight:bold;color:#1a1a2e;margin:16px 0 8px">8. Office Activity</div>
+      ${row('a) Office actively in use?', d.q8a, true)}
+      ${row('b) Number of employees at location', d.q8b)}
+
+      <div style="font-size:15px;font-weight:bold;color:#1a1a2e;margin:16px 0 8px">9. Website</div>
+      ${row('c) Website address(es)', d.q9c)}
+
+      ${sectionHeader('Security (Site/Access Documentation Security)')}
+      <div style="font-size:15px;font-weight:bold;color:#1a1a2e;margin:16px 0 8px">10. Physical Security</div>
+      ${row('a) Security features at location', d.q10a)}
+      ${row('b) Hours of operation and access', d.q10b)}
+      ${row('c) Use a security system?', d.q10c, true)}
+      ${row('d) Security guard on duty?', d.q10d, true)}
+      ${d.q10d === 'Yes' ? row('e) Guard hours', d.q10e, true) : ''}
+
+      <div style="font-size:15px;font-weight:bold;color:#1a1a2e;margin:16px 0 8px">11. Consumer Report Security</div>
+      ${row('How printed reports are secured', d.q11)}
+
+      <div style="font-size:15px;font-weight:bold;color:#1a1a2e;margin:16px 0 8px">12. Servers</div>
+      ${row('a) Server location', d.q12a, true)}
+      ${d.q12a === 'On-site' ? row('b) Server in segregated/secure location?', d.q12b, true) : ''}
+      ${d.q12a === 'On-site' ? row('c) Server setup description', d.q12c) : ''}
+
+      ${d.q12a === 'On-site' ? `
+      <div style="font-size:15px;font-weight:bold;color:#1a1a2e;margin:16px 0 8px">13. Local Server Details</div>
+      ${row('a) Server room has environmental controls?', d.q13a, true)}
+      ${row('b) Who services/maintains server equipment?', d.q13b)}
+      ${row('c) Power control systems', d.q13c, true)}
+      ` : ''}
+
+      <div style="font-size:15px;font-weight:bold;color:#1a1a2e;margin:16px 0 8px">14. Document Disposal</div>
+      ${row('a) How confidential documents are destroyed', d.q14a, true)}
+      ${d.q14a === 'With A Paper Shredder' ? row('b) Shredder bins locked?', d.q14b, true) : ''}
+      ${d.q14a === 'We dispose in a different manner' ? row('c) Disposal method', d.q14c) : ''}
+
+      <div style="font-size:15px;font-weight:bold;color:#1a1a2e;margin:16px 0 8px">15–20. Additional Security</div>
+      ${row('15. Equipment location used to access credit reports', d.q15)}
+      ${row('16. Equipment secured by PC lock?', d.q16, true)}
+      ${row('17. Server/PC password protected?', d.q17, true)}
+      ${row('18. Server/PC viewable by non-employees?', d.q18, true)}
+      ${row('19. Who performs computer maintenance/repair?', d.q19)}
+      ${row('20. Computers have current anti-virus/anti-malware?', d.q20, true)}
+
+      ${sectionHeader('Inspector Acknowledgment')}
+      ${row('Acknowledgment Name', d.ackName)}
+      ${row('Phone', d.ackPhone)}
+      ${row('Title', d.ackTitle)}
+      ${sigRow('Signature', d.signature1_base64)}
+
+      ${sectionHeader('Marketing & Compliance')}
+      ${row('Email Firm Offers Approved', mktEmails.join('; ') || '')}
+      ${row('Physical Firm Offer Letters Approved', mktMails.join('; ') || '')}
+      ${row('Email URL', d.emailUrl)}
+      ${row('Subject Line Preference', d.subjectPref, true)}
+      ${row('Marketing Signatory Name', d.mktName)}
+      ${row('Title', d.mktTitle)}
+      ${row('Date', d.mktDate)}
+      ${sigRow('Signature', d.signature2_base64)}
+
+      ${sectionHeader('SoftPull Page')}
+      ${row('Utilizing SoftPull Feature?', d.softpullDecision, true)}
+      ${d.softpullDecision === 'Yes' ? row('Program 1 Name', d.sp_prog1_name) : ''}
+      ${d.softpullDecision === 'Yes' ? row('Program 1 Minimum FICO', d.sp_prog1_fico) : ''}
+      ${d.softpullDecision === 'Yes' ? row('Program 2 Name', d.sp_prog2_name) : ''}
+      ${d.softpullDecision === 'Yes' ? row('Program 2 Minimum FICO', d.sp_prog2_fico) : ''}
+      ${d.softpullDecision === 'Yes' ? row('SoftPull URL', d.sp_url) : ''}
+      ${d.softpullDecision === 'Yes' ? row('SoftPull Signatory Name', d.sp_name) : ''}
+      ${d.softpullDecision === 'Yes' ? row('Title', d.sp_title) : ''}
+      ${d.softpullDecision === 'Yes' ? row('Date', d.sp_date) : ''}
+      ${d.softpullDecision === 'Yes' ? sigRow('Signature', d.signature3_base64) : ''}
+
+      ${d.industryType === 'Mortgage Broker' ? sectionHeader('Mortgage Broker — Lender Authorization') : ''}
+      ${d.industryType === 'Mortgage Broker' ? row('Authorized Lenders', lendersList) : ''}
+      ${d.industryType === 'Mortgage Broker' ? row('Authorized Signatory', d.lenderAuthName) : ''}
+
+      ${sectionHeader('MonitorBase Setup')}
+      ${row('Minimum Credit Criteria (FICO)', d.creditCriteria ? d.creditCriteria + '+' : '', true)}
+      ${row('Billing Same as Primary Contact?', d.billingSame ? 'Yes' : 'No', true)}
+      ${!d.billingSame ? row('Billing Contact Name', d.billingName) : ''}
+      ${!d.billingSame ? row('Billing Contact Phone', d.billingPhone) : ''}
+      ${!d.billingSame ? row('Billing Contact Email', d.billingEmail) : ''}
+      ${row('Admin Full Name', d.adminName)}
+      ${row('Admin Email', d.adminEmail)}
+      ${row('NMLS Number', d.adminNMLS)}
+      ${row('Admin Cell', d.adminCell)}
+      ${row('Branch Phone', d.branchPhone)}
+      ${row('Tax Identification Number', d.taxId)}
+      ${row('Principal / Owners', d.principalOwners)}
+      ${row('Owners in Restricted Countries?', d.restrictedCountry, true)}
+      ${row('Technical Providers / Agents', d.techProviders)}
+
+      ${sectionHeader('Flow Activity History')}
+      <table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:8px">
+        <thead>
+          <tr style="background:#e8eaf0">
+            <th style="text-align:left;padding:10px 12px;border:1px solid #d0d7e3;font-weight:bold;color:#1a1a2e">Actor</th>
+            <th style="text-align:left;padding:10px 12px;border:1px solid #d0d7e3;font-weight:bold;color:#1a1a2e">Actions</th>
+            <th style="text-align:left;padding:10px 12px;border:1px solid #d0d7e3;font-weight:bold;color:#1a1a2e">Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="padding:10px 12px;border:1px solid #d0d7e3">${d.processedBy || d.primaryContact || 'Applicant'}</td>
+            <td style="padding:10px 12px;border:1px solid #d0d7e3">Form submitted — End User Virtual Inspection Checklist</td>
+            <td style="padding:10px 12px;border:1px solid #d0d7e3">${new Date().toLocaleString()}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  document.getElementById('pdf-template').innerHTML = html;
+}
+
+async function generatePDF() {
+  populatePDFTemplate();
+
+  const template = document.getElementById('pdf-template');
+  template.style.display = 'block';
+  template.style.position = 'fixed';
+  template.style.left = '-9999px';
+  template.style.top = '0';
+  template.style.zIndex = '-1';
+
+  // Small delay to let browser lay out
+  await new Promise(r => setTimeout(r, 300));
+
+  const canvas = await html2canvas(template, {
+    scale: 2,
+    useCORS: false,
+    allowTaint: true,
+    width: 794,
+    windowWidth: 794,
+    logging: false
+  });
+
+  template.style.display = 'none';
+
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF('p', 'mm', 'a4');
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
+  const imgWidth = pageWidth;
+  const imgHeight = (canvas.height * pageWidth) / canvas.width;
+
+  let heightLeft = imgHeight;
+  let position = 0;
+  const imgData = canvas.toDataURL('image/jpeg', 0.92);
+
+  pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+  heightLeft -= pageHeight;
+
+  while (heightLeft > 0) {
+    position -= pageHeight;
+    pdf.addPage();
+    pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+  }
+
+  // Add page numbers
+  const pageCount = pdf.internal.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    pdf.setPage(i);
+    pdf.setFontSize(9);
+    pdf.setTextColor(150);
+    pdf.text(`Page ${i} of ${pageCount}`, pageWidth - 15, pageHeight - 8, { align: 'right' });
+  }
+
+  const businessName = (formData.businessName || 'Unknown').replace(/[^a-zA-Z0-9_-]/g, '_');
+  const dateStr = new Date().toISOString().split('T')[0];
+  pdf.save(`MonitorBase_Onboarding_${businessName}_${dateStr}.pdf`);
+}
+</script>
+
+</body>
+</html>
+<!-- ============================================================ -->
+<!-- TEST FILL — PREVIEW ONLY, remove before deploying           -->
+<!-- ============================================================ -->
+<style>
+#testFillBtn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 999;
+  background: #ff6b00;
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  padding: 12px 22px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+  font-family: inherit;
+  letter-spacing: 0.3px;
+  transition: background 0.2s, transform 0.1s;
+}
+#testFillBtn:hover { background: #e05a00; transform: scale(1.04); }
+#testFillBtn:active { transform: scale(0.97); }
+</style>
+
+<button id="testFillBtn" onclick="fillTestData()" title="Fills all form fields with sample data for preview purposes">
+  🧪 Test Fill
+</button>
+
+<script>
+function fillTestData() {
+  // Helper: set input value and fire change/input events
+  function set(id, val) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.value = val;
+    el.dispatchEvent(new Event('input', {bubbles:true}));
+    el.dispatchEvent(new Event('change', {bubbles:true}));
+  }
+
+  // Helper: check a radio button by name + value
+  function radio(name, val) {
+    const el = document.querySelector(`input[name="${name}"][value="${val}"]`);
+    if (!el) return;
+    el.checked = true;
+    el.dispatchEvent(new Event('change', {bubbles:true}));
+  }
+
+  // Helper: check a checkbox
+  function check(id, checked=true) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.checked = checked;
+    el.dispatchEvent(new Event('change', {bubbles:true}));
+  }
+
+  // ── PAGE 1: Company Info ────────────────────────────────────
+  set('businessName',   'Sterling Home Lending LLC');
+  set('dba',            'Sterling Mortgage');
+  set('processedBy',    'Jane Doe');
+  set('industryType',   'Mortgage Broker');
+  document.getElementById('industryType').dispatchEvent(new Event('change', {bubbles:true}));
+  set('primaryContact', 'Jane Doe');
+  set('primaryEmail',   'jane.doe@sterlinglending.com');
+  set('primaryPhone',   '(888) 555-0101');
+  set('timeAtAddress',  '4 years');
+  set('addrStreet',     '310 Commerce Drive');
+  set('addrStreet2',    'Suite 200');
+  set('addrCity',       'Salt Lake City');
+  set('addrState',      'UT');
+  set('addrZip',        '84101');
+  set('startDate',      '2026-06-26');
+  set('endDate',        '2027-06-26');
+
+  // ── PAGE 2: Photos ──────────────────────────────────────────
+  // Geolocation: set directly on the read-only field
+  const geoField = document.getElementById('geoCoords');
+  if (geoField) { geoField.value = 'Lat: 40.7601, Lng: -111.8910'; }
+
+  set('photoType',    'Real Time');
+  set('photoTakenBy', 'Jane Doe');
+  set('photoDate',    '2026-06-26');
+
+  // Mark upload zones as "uploaded" visually with placeholder text
+  const uploadLabels = {
+    'upload-1': 'exterior_signage.jpg',
+    'upload-2': 'reception_area.jpg',
+    'upload-3': 'workspace.jpg',
+    'upload-4': 'file_cabinets.jpg',
+    'upload-5': 'server_room.jpg',
+    'upload-6': 'shredder.jpg',
+    'upload-logo': 'company_logo.png',
+    'upload-photoid': 'photo_id.jpg',
+  };
+  Object.entries(uploadLabels).forEach(([zoneId, filename]) => {
+    const zone = document.getElementById(zoneId);
+    if (!zone) return;
+    zone.classList.add('uploaded');
+    const fn = zone.querySelector('.upload-filename');
+    if (fn) { fn.textContent = '✓ ' + filename; fn.style.display = 'block'; }
+    const icon = zone.querySelector('.upload-icon');
+    if (icon) icon.textContent = '✓';
+  });
+
+  // ── PAGE 3: Inspection Checklist Q1–9 ──────────────────────
+  radio('q1a', 'Yes');
+  radio('q1c', 'Yes');
+  set('q2a', 'Commercial Building');
+  document.getElementById('q2a').dispatchEvent(new Event('change', {bubbles:true}));
+  radio('q2b', 'No');
+  radio('q2c', 'No');
+  set('q2d', 'Building managed by Anchor Properties, (801) 555-0200');
+  radio('q4a', 'Yes');
+  radio('q5a', 'Yes');
+  set('q5b', 'ClearView Accounting — bookkeeping services');
+  radio('q5c', 'Yes');
+  set('q5d', 'Unrelated businesses sharing a floor, no access to each other\'s spaces');
+  radio('q6a', 'Yes');
+  set('q6b', 'Electronic');
+  document.getElementById('q6b').dispatchEvent(new Event('change', {bubbles:true}));
+  radio('q7a', 'Yes');
+  set('q7b', 'Building exterior above main entrance');
+  radio('q7d', 'Yes');
+  radio('q8a', 'Yes');
+  set('q8b', '12');
+  set('q9c', 'https://www.sterlinglending.com');
+
+  // ── PAGE 4: Security Q10–14 ─────────────────────────────────
+  set('q10a', 'Keycard entry, deadbolt locks, CCTV cameras, alarm system');
+  set('q10b', 'Mon–Fri 8am–6pm. After-hours keycard access for authorized staff only.');
+  radio('q10c', 'Yes');
+  radio('q10d', 'Yes');
+  set('q10e', 'During business hours only, 8am–6pm');
+  set('q11',   'All printed reports are stored in locked filing cabinets in a restricted-access room.');
+  set('q12a',  'On-site');
+  document.getElementById('q12a').dispatchEvent(new Event('change', {bubbles:true}));
+  radio('q12b', 'Yes');
+  set('q12c',  'Server room is key-locked, separate from general office area with limited access.');
+  radio('q13a', 'Yes');
+  set('q13b',  'ContractIT Solutions, (801) 555-0333');
+  set('q13c',  'Uninterruptible');
+  document.getElementById('q13c')?.dispatchEvent(new Event('change', {bubbles:true}));
+  set('q14a',  'With A Paper Shredder');
+  document.getElementById('q14a').dispatchEvent(new Event('change', {bubbles:true}));
+  set('q14b',  'The Shredder Bins Are Locked');
+  document.getElementById('q14b')?.dispatchEvent(new Event('change', {bubbles:true}));
+
+  // ── PAGE 5: Security Q15–20 + Acknowledgment ───────────────
+  set('q15',  'Dedicated workstations located inside locked private offices, not visible from lobby');
+  radio('q16', 'Yes');
+  radio('q17', 'Yes');
+  radio('q18', 'No');
+  set('q19',  'ContractIT Solutions — on-site quarterly, remote access for urgent issues');
+  radio('q20', 'Yes');
+  set('ackPhone', '(888) 555-0101');
+  set('ackName',  'Jane Doe');
+  document.getElementById('ackNameInline') && (document.getElementById('ackNameInline').textContent = 'Jane Doe');
+  set('ackTitle', 'Branch Manager');
+
+  // Draw a squiggle on signature pad 1
+  drawTestSignature(1);
+
+  // ── PAGE 6: Marketing & Compliance ─────────────────────────
+  check('mktEmail1', true);
+  check('mktEmail2', true);
+  check('mktMail1',  true);
+  check('mktMail2',  true);
+  set('emailUrl',    'https://myborrowers.sterlinglending.com');
+  set('subjectPref', 'Just Checking In');
+  set('mktName',     'Jane Doe');
+  set('mktTitle',    'Branch Manager');
+  set('mktDate',     '2026-06-26');
+  drawTestSignature(2);
+
+  // ── PAGE 7: SoftPull Decision ───────────────────────────────
+  if (typeof selectSoftpull === 'function') selectSoftpull('Yes');
+
+  // ── PAGE 8: SoftPull Setup ──────────────────────────────────
+  set('sp_prog1_name', 'FHA 30-Year');
+  set('sp_prog1_fico', '580');
+  set('sp_prog2_name', 'Conventional 30-Year');
+  set('sp_prog2_fico', '620');
+  set('sp_url',        'https://softpull.sterlinglending.com');
+  set('sp_name',       'Jane Doe');
+  set('sp_title',      'Branch Manager');
+  set('sp_date',       '2026-06-26');
+  drawTestSignature(3);
+
+  // ── PAGE 9: Lender Authorization (Broker only) ─────────────
+  ['Quicken_Loans', 'United_Wholesale_Mortgage', 'Fairway_Independent_Mortgage',
+   'Caliber_Home_Loans', 'Guaranteed_Rate'].forEach(l => {
+    check('lender_' + l, true);
+  });
+  check('lenderOther', true);
+  document.getElementById('lenderOtherText') && (document.getElementById('lenderOtherText').style.display = 'block');
+  set('lenderOtherText', 'Sierra Pacific Mortgage');
+  set('lenderAuthName', 'Jane Doe');
+
+  // ── PAGE 10: MonitorBase Setup ──────────────────────────────
+  radio('creditCriteria', '620');
+  check('billingSame', false);
+  set('billingName',      'Tom Reynolds');
+  set('billingPhone',     '(888) 555-0202');
+  set('billingEmail',     'accounting@sterlinglending.com');
+  set('adminName',        'Jane Doe');
+  set('adminEmail',       'jane.doe@sterlinglending.com');
+  set('adminNMLS',        '1234567');
+  set('adminCell',        '(888) 555-0101');
+  set('branchPhone',      '(888) 555-0100');
+  set('taxId',            '87-1234567');
+  set('principalOwners',  'Jane Doe — 60% owner\nMark Sterling — 40% owner');
+  radio('restrictedCountry', 'No');
+  set('techProviders',    'Encompass LOS (ICE Mortgage Technology), Salesforce CRM');
+
+  alert('✅ Test data filled! Click through the form pages to review everything.');
+}
+
+// Draw a simple test squiggle on a signature canvas
+function drawTestSignature(padIndex) {
+  try {
+    const canvasId = 'sigCanvas' + padIndex;
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width || canvas.offsetWidth;
+    const h = canvas.height || canvas.offsetHeight;
+    canvas.width  = w || 500;
+    canvas.height = h || 160;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = '#222';
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    // Simple cursive-ish squiggle
+    ctx.moveTo(w*0.15, h*0.6);
+    ctx.bezierCurveTo(w*0.2, h*0.2, w*0.3, h*0.8, w*0.4, h*0.5);
+    ctx.bezierCurveTo(w*0.5, h*0.2, w*0.55, h*0.7, w*0.65, h*0.55);
+    ctx.bezierCurveTo(w*0.72, h*0.45, w*0.78, h*0.65, w*0.85, h*0.5);
+    ctx.stroke();
+  } catch(e) { /* ignore */ }
+}
+</script>
